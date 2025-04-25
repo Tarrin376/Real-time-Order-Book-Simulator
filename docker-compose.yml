@@ -1,0 +1,4 @@
+---
+services:
+  trading-client:
+    build: ./trading-client
