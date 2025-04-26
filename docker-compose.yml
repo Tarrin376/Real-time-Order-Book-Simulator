@@ -15,3 +15,11 @@ services:
       dockerfile: Dockerfile
     environment:
       - KAFKA_BOOTSTRAP_SERVERS=broker:29092
+  
+  backend:
+    container_name: backend
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    environment:
+      - KAFKA_BOOTSTRAP_SERVERS=broker:29092

@@ -1,10 +1,10 @@
-package com.engine.dto;
+package com.engine.domain.model;
 
 import com.engine.enums.OrderSide;
 import com.engine.enums.OrderType;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class OrderDto {
+public class Order {
     @JsonProperty("type")
     private OrderType type;
 
