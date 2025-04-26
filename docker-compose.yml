@@ -1,4 +1,17 @@
 ---
 services:
   trading-client:
-    build: ./trading-client
+    container_name: trading-client
+    build:
+      context: ./trading-client
+      dockerfile: Dockerfile
+    environment:
+      - KAFKA_BOOTSTRAP_SERVERS=broker:29092
+      
+  matching-engine:
+    container_name: matching-engine
+    build:
+      context: ./matching-engine
+      dockerfile: Dockerfile
+    environment:
+      - KAFKA_BOOTSTRAP_SERVERS=broker:29092

@@ -6,8 +6,9 @@ import uuid
 import json
 import logging
 import sys
+import os
 
-conf = {'bootstrap.servers': 'broker:29092',
+conf = {'bootstrap.servers': os.getenv('KAFKA_BOOTSTRAP_SERVERS', 'localhost:9092'),
         'client.id': socket.gethostname()}
 
 logging.basicConfig(
@@ -56,8 +57,8 @@ class TradingClient:
         }
 
     def send_order(self, order):
-        self.logger.info(f"Sending order: {order["order_id"]} - {order["symbol"]} - {order["side"]}")
-        self.producer.produce('orders', key=order["symbol"], value=json.dumps(order).encode('utf-8'))
+        self.logger.info(f"Sending order: {order['order_id']} - {order['symbol']} - {order['side']}")
+        self.producer.produce('orders', key=order['symbol'], value=json.dumps(order).encode('utf-8'))
 
 if __name__ == "__main__":
     TradingClient()
