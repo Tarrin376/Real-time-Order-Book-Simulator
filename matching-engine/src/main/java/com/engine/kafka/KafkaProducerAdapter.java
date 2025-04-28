@@ -16,7 +16,7 @@ public class KafkaProducerAdapter<T> {
         this.eventSerializer = eventSerializer;
     }
 
-    public void produceEvent(final T event) {
+    public void produce(final T event) {
         try (final Producer<String, String> producer = new KafkaProducer<>(properties)) {
             producer.send(eventSerializer.serialize(event));
         }

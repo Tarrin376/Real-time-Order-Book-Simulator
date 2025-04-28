@@ -25,7 +25,7 @@ public class TradeHandler implements EventSerializer<Trade> {
     }
 
     public void publishTrade(final Trade trade) {
-        producerAdapter.produceEvent(trade);
+        producerAdapter.produce(trade);
     }
 
     @Override
