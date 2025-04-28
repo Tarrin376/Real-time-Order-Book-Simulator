@@ -23,3 +23,11 @@ services:
       dockerfile: Dockerfile
     environment:
       - KAFKA_BOOTSTRAP_SERVERS=broker:29092
+  
+  frontend:
+    container_name: frontend
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "9000:80"

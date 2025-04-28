@@ -19,6 +19,7 @@ public class OrderHandler implements EventHandler<Order>, EventDeserializer<Orde
         put("key.deserializer", StringDeserializer.class.getCanonicalName());
         put("value.deserializer", StringDeserializer.class.getCanonicalName());
         put("group.id", "matching-engine");
+        put("client.id", "matching-engine");
         put("auto.offset.reset", "earliest");
     }};
 

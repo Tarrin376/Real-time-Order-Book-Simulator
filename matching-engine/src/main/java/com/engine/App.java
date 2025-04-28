@@ -7,10 +7,7 @@ import com.engine.domain.model.OrderBook;
 
 public class App {
     public static void main(final String[] args) {
-        TradeHandler tradeHandler = new TradeHandler();
-        OrderBook orderBook = new OrderBook();
-        MatchingEngine matchingEngine = new MatchingEngine(tradeHandler, orderBook);
-
+        MatchingEngine matchingEngine = new MatchingEngine(new TradeHandler(), new OrderBook());
         OrderHandler orderHandler = new OrderHandler(matchingEngine);
         orderHandler.consumeOrders();
     }

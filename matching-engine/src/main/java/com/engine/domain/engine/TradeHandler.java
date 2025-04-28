@@ -30,6 +30,6 @@ public class TradeHandler implements EventSerializer<Trade> {
 
     @Override
     public ProducerRecord<String, String> serialize(final Trade trade) {
-        return new ProducerRecord<>("trades", "exec", "trade");
+        return new ProducerRecord<>("trades", "exec", "{}");
     }
 }

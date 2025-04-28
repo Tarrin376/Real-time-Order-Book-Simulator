@@ -1,35 +1,30 @@
-const kafka = require('@confluentinc/kafka-javascript');
-require("dotenv").config();
+import express from 'express';
+import http from 'http';
 
-function createConsumer(config, onData) {
-    const consumer = new kafka.KafkaConsumer(config, {'auto.offset.reset': 'earliest'});
+import { consume } from './kafka/kafkaConsumer.js';
+import { Server } from 'socket.io';
 
-    return new Promise((resolve, _) => {
-        consumer
-        .on('ready', () => resolve(consumer))
-        .on('data', onData);
+const app = express();
+const server = http.createServer(app);
 
-        consumer.connect();
+const io = new Server(server, {
+    cors: {
+        origin: 'http://localhost:9000'
+    }
+});
+
+io.on('connection', (socket) => {
+    console.log("A user connected!");
+    socket.on('disconnect', () => {
+        console.log("A user disconnected.");
     });
-};
+});
 
-async function consumeExecutions() {
-    const config = {
-        'bootstrap.servers': process.env.KAFKA_BOOTSTRAP_SERVERS ?? 'localhost:9092',
-        'group.id': 'trades'
-    };
+server.listen(3000, () => {
+    console.log("Event gateway listening on port 3000");
+});
 
-    const consumer = await createConsumer(config, ({key, value}) => {
-        console.log(`Consumed event: key = ${key} value = ${value}`);
-    });
-
-    consumer.subscribe(["trades"]);
-    consumer.consume();
-
-    process.on('SIGINT', () => {
-        console.log('\nDisconnecting consumer ...');
-        consumer.disconnect();
-    });
-}
-
-consumeExecutions();
+consume({
+    onTrade: (trade) => console.log("Trade: " + trade),
+    onOrderBookUpdate: (orderBookState) => console.log("Order book: " + orderBookState)
+});
