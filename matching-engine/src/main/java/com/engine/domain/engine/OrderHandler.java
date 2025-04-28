@@ -6,9 +6,9 @@ import java.util.Properties;
 import org.apache.kafka.common.serialization.StringDeserializer;
 
 import com.engine.domain.model.Order;
-import com.engine.infra.KafkaConsumerAdapter;
 import com.engine.interfaces.EventDeserializer;
 import com.engine.interfaces.EventHandler;
+import com.engine.kafka.KafkaConsumerAdapter;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 

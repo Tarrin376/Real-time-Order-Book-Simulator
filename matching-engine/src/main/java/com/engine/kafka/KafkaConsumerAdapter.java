@@ -1,4 +1,4 @@
-package com.engine.infra;
+package com.engine.kafka;
 
 import java.time.Duration;
 import java.util.List;

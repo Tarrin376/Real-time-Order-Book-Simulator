@@ -6,8 +6,8 @@ import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.serialization.StringSerializer;
 
 import com.engine.domain.model.Trade;
-import com.engine.infra.KafkaProducerAdapter;
 import com.engine.interfaces.EventSerializer;
+import com.engine.kafka.KafkaProducerAdapter;
 
 public class TradeHandler implements EventSerializer<Trade> {
     private final String bootstrapServers = System.getenv().getOrDefault("KAFKA_BOOTSTRAP_SERVERS", "localhost:9092");
