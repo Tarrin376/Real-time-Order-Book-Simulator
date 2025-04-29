@@ -1,7 +1,5 @@
 package com.engine.domain.engine;
 
-import java.util.UUID;
-
 import com.engine.domain.model.Execution;
 import com.engine.domain.model.Order;
 import com.engine.domain.model.OrderBook;
@@ -18,6 +16,6 @@ public class MatchingEngine {
 
     public void processNewOrder(final Order order) {
         System.out.println("Received order: " + order);
-        executionHandler.sendExecution(new Execution(OrderSide.BUY, "TSLA", 100, 50, UUID.randomUUID()));
+        executionHandler.sendExecution(new Execution(OrderSide.BUY, "TSLA", 100, 50));
     }
 }
