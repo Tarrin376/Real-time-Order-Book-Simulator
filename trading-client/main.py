@@ -50,15 +50,17 @@ class TradingClient:
         return {
             "type": random.choice(self._order_types),
             "side": random.choice(["BUY", "SELL"]),
-            "symbol": random.choice(self._tickers),
+            "ticker": random.choice(self._tickers),
             "price": round(random.random() * 200, 2),
             "quantity": random.randrange(1, 100),
-            "order_id": str(uuid.uuid4())
+            "order_id": str(uuid.uuid4()),
+            "timestamp": time.time()
         }
 
     def send_order(self, order):
-        self.logger.info(f"Sending order: {order['order_id']} - {order['symbol']} - {order['side']}")
-        self.producer.produce('orders', key=order['symbol'], value=json.dumps(order).encode('utf-8'))
+        self.logger.info(f"Sending order: [{order['order_id']}] {order['type']} - {order['side']} - " + 
+                        f"{order['ticker']} - £{order['price']} {order['quantity']}x ({order['timestamp']})")
+        self.producer.produce('orders', key=order['ticker'], value=json.dumps(order).encode('utf-8'))
 
 if __name__ == "__main__":
     TradingClient()

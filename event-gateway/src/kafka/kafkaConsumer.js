@@ -16,20 +16,13 @@ function createConsumer(config, onData) {
     });
 };
 
-export async function consume({ onTrade, onOrderBookUpdate }) {
+export async function consume({ onExecution }) {
     const config = {
         'bootstrap.servers': process.env.KAFKA_BOOTSTRAP_SERVERS ?? 'localhost:9092',
         'group.id': 'event-gateway'
     };
 
-    const consumer = await createConsumer(config, ({topic, value}) => {
-        if (topic === 'trades') {
-            onTrade(value);
-        } else if (topic === 'order-book-updates') {
-            onOrderBookUpdate(value);
-        }
-    });
-
-    consumer.subscribe(["trades"]);
+    const consumer = await createConsumer(config, ({_, value}) => onExecution(value));
+    consumer.subscribe(["executions"]);
     consumer.consume();
 }

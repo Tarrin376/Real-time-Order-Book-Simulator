@@ -11,8 +11,8 @@ public class Order {
     @JsonProperty("side")
     private OrderSide side;
 
-    @JsonProperty("symbol")
-    private String symbol;
+    @JsonProperty("ticker")
+    private String ticker;
 
     @JsonProperty("price")
     private double price;
@@ -23,15 +23,19 @@ public class Order {
     @JsonProperty("order_id")
     private String id;
 
+    @JsonProperty("timestamp")
+    private float timestamp;
+
     public OrderType getType() { return type; }
     public OrderSide getSide() { return side; }
-    public String getSymbol() { return symbol; }
+    public String getTicker() { return ticker; }
     public double getPrice() { return price; }
     public int getQuantity() { return quantity; }
     public String getId() { return id; }
+    public float getTimestamp() { return timestamp; }
 
     @Override
     public String toString() {
-        return "Type: " + type + " | Side: " + side + " | Symbol: " + symbol + " | Price: " + price + " | Quantity: " + quantity + " | Order ID: " + id;
+        return "[" + id + "] | " + type + " | " + side + " | " + ticker + " | £" + price + " " + quantity + "x" + " (" + timestamp + ")";
     }
 }
