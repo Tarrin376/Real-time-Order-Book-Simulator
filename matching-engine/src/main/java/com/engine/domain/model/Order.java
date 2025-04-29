@@ -34,8 +34,16 @@ public class Order {
     public String getId() { return id; }
     public float getTimestamp() { return timestamp; }
 
+    public void decreaseQuantity(final int amount) {
+        quantity -= Math.min(quantity, amount);
+    }
+
+    public boolean isFilled() {
+        return quantity == 0;
+    }
+
     @Override
     public String toString() {
-        return "[" + id + "] | " + type + " | " + side + " | " + ticker + " | £" + price + " " + quantity + "x" + " (" + timestamp + ")";
+        return "[" + id + "] " + type + " " + side + " " + ticker + " | £" + price + " x" + quantity + " (" + timestamp + ")";
     }
 }

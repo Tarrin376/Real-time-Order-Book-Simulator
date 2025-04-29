@@ -10,7 +10,6 @@ import com.engine.interfaces.EventSerializer;
 import com.engine.kafka.KafkaProducerAdapter;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectWriter; 
 
 public class ExecutionHandler implements EventSerializer<Execution> {
     private final String bootstrapServers = System.getenv().getOrDefault("KAFKA_BOOTSTRAP_SERVERS", "localhost:9092");
@@ -37,8 +36,9 @@ public class ExecutionHandler implements EventSerializer<Execution> {
     @Override
     public ProducerRecord<String, String> serialize(final Execution exec) {
         try {
-            ObjectWriter ow = new ObjectMapper().writer().withDefaultPrettyPrinter();
-            String json = ow.writeValueAsString(exec);
+            ObjectMapper objectMapper = new ObjectMapper();
+            String json = objectMapper.writeValueAsString(exec);
+            System.out.println("Executed: " + json);
             return new ProducerRecord<>("executions", json);
         } catch (JsonProcessingException e) {
             System.out.println("Failed to serialize execution");

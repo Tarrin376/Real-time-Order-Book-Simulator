@@ -58,8 +58,8 @@ class TradingClient:
         }
 
     def send_order(self, order):
-        self.logger.info(f"Sending order: [{order['order_id']}] {order['type']} - {order['side']} - " + 
-                        f"{order['ticker']} - £{order['price']} {order['quantity']}x ({order['timestamp']})")
+        self.logger.info(f"Sending order: [{order['order_id']}] {order['type']} {order['side']} " + 
+                        f"{order['ticker']} | £{order['price']} x{order['quantity']} ({order['timestamp']})")
         self.producer.produce('orders', key=order['ticker'], value=json.dumps(order).encode('utf-8'))
 
 if __name__ == "__main__":

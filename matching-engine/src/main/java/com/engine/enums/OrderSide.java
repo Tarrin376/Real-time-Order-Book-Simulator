@@ -1,5 +1,7 @@
 package com.engine.enums;
 
+import com.fasterxml.jackson.annotation.JsonValue;
+
 public enum OrderSide {
     BUY("BUY"),
     SELL("SELL");
@@ -10,8 +12,8 @@ public enum OrderSide {
         this.orderSide = orderSide;
     }
 
-    @Override
-    public String toString() {
+    @JsonValue
+    public String getOrderSide() {
         return orderSide;
     }
 }

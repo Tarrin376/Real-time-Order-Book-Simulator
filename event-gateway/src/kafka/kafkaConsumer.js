@@ -22,7 +22,11 @@ export async function consume({ onExecution }) {
         'group.id': 'event-gateway'
     };
 
-    const consumer = await createConsumer(config, ({_, value}) => onExecution(value));
+    const consumer = await createConsumer(config, (message) => {
+        const data = JSON.parse(message.value.toString());
+        onExecution(data);
+    });
+
     consumer.subscribe(["executions"]);
     consumer.consume();
 }

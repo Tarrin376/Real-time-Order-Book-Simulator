@@ -25,6 +25,7 @@ server.listen(3000, () => {
 });
 
 consume({
-    onExecution: (execution) => console.log("Execution: " + execution),
-    onOrderBookUpdate: (orderBookState) => console.log("Order book: " + orderBookState)
+    onExecution: (execution) => {
+        console.log(execution);
+    }
 });
