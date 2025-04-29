@@ -5,8 +5,8 @@ import java.util.PriorityQueue;
 import com.engine.domain.model.Order;
 
 public class OrderBook {
-    protected PriorityQueue<Order> bids;
-    protected PriorityQueue<Order> asks;
+    private PriorityQueue<Order> bids;
+    private PriorityQueue<Order> asks;
 
     public OrderBook() {
         bids = new PriorityQueue<>((a, b) -> {
