@@ -20,11 +20,11 @@ public class Order {
     @JsonProperty("quantity")
     private int quantity;
 
-    @JsonProperty("order_id")
+    @JsonProperty("orderId")
     private String id;
 
     @JsonProperty("timestamp")
-    private float timestamp;
+    private double timestamp;
 
     public OrderType getType() { return type; }
     public OrderSide getSide() { return side; }
@@ -32,7 +32,7 @@ public class Order {
     public double getPrice() { return price; }
     public int getQuantity() { return quantity; }
     public String getId() { return id; }
-    public float getTimestamp() { return timestamp; }
+    public double getTimestamp() { return timestamp; }
 
     public void decreaseQuantity(final int amount) {
         quantity -= Math.min(quantity, amount);

@@ -21,15 +21,15 @@ public class ExecutionHandler implements EventSerializer<Execution> {
     }};
 
     private final KafkaProducerAdapter<Execution> producerAdapter;
-    private final CandlestickAggregator candlestickAggregator;
+    private final OHLCDataAggregator ohlcDataAggregator;
 
     public ExecutionHandler() {
         this.producerAdapter = new KafkaProducerAdapter<>(properties, this);
-        this.candlestickAggregator = new CandlestickAggregator();
+        this.ohlcDataAggregator = new OHLCDataAggregator(properties);
     }
 
     public void sendExecution(final Execution exec) {
-        candlestickAggregator.add(exec);
+        ohlcDataAggregator.addToBuffer(exec);
         producerAdapter.produce(exec);
     }
 
@@ -39,7 +39,7 @@ public class ExecutionHandler implements EventSerializer<Execution> {
             ObjectMapper objectMapper = new ObjectMapper();
             String json = objectMapper.writeValueAsString(exec);
             System.out.println("Executed: " + json);
-            return new ProducerRecord<>("executions", json);
+            return new ProducerRecord<>("executions", exec.getTicker(), json);
         } catch (JsonProcessingException e) {
             System.out.println("Failed to serialize execution");
             return null;

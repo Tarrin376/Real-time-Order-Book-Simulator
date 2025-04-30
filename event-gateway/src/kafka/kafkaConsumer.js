@@ -1,32 +1,45 @@
 import pkg from '@confluentinc/kafka-javascript';
 import dotenv from 'dotenv';
 
-const { KafkaConsumer } = pkg;
+const { KafkaJS } = pkg;
 dotenv.config();
 
-function createConsumer(config, onData) {
-    const consumer = new KafkaConsumer(config, {'auto.offset.reset': 'earliest'});
+const consumer = new KafkaJS.Kafka().consumer({
+    'bootstrap.servers': process.env.KAFKA_BOOTSTRAP_SERVERS ?? 'localhost:9092',
+    'group.id': 'event-gateway'
+});
 
-    return new Promise((resolve, _) => {
-        consumer
-        .on('ready', () => resolve(consumer))
-        .on('data', onData);
+const topics = ["executions", "ohlc-events"];
 
-        consumer.connect();
-    });
-};
+export async function consume({ onExecution, onOHLCEvent }) {
+    try {
+        await consumer.connect();
+        console.log("Kafka consumer connected successfully");
 
-export async function consume({ onExecution }) {
-    const config = {
-        'bootstrap.servers': process.env.KAFKA_BOOTSTRAP_SERVERS ?? 'localhost:9092',
-        'group.id': 'event-gateway'
-    };
+        await consumer.subscribe({topics: topics});
+        console.log(`Subscribed to topics: ${topics.join(", ")}`);
 
-    const consumer = await createConsumer(config, (message) => {
-        const data = JSON.parse(message.value.toString());
-        onExecution(data);
-    });
-
-    consumer.subscribe(["executions"]);
-    consumer.consume();
+        await consumer.run({
+            eachMessage: async ({ topic, _, message }) => {
+                try {
+                    const value = message.value.toString();
+                    switch (topic) {
+                        case "executions": 
+                            onExecution(value);
+                            break;
+                        case "ohlc-events": 
+                            onOHLCEvent(value);
+                            break;
+                        default: 
+                            console.log(`Received event from unhandled topic: ${topic}`);
+                            break;
+                    }
+                } catch (err) {
+                    console.error("Error processing message:", err);
+                }
+            }
+        });
+    } catch (err) {
+        console.error("Error in Kafka consumer: ", err);
+    }
 }

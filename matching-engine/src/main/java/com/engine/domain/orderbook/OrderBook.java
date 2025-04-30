@@ -5,18 +5,18 @@ import java.util.PriorityQueue;
 import com.engine.domain.model.Order;
 
 public class OrderBook {
-    private PriorityQueue<Order> bids;
-    private PriorityQueue<Order> asks;
+    private final PriorityQueue<Order> bids;
+    private final PriorityQueue<Order> asks;
 
     public OrderBook() {
         bids = new PriorityQueue<>((a, b) -> {
             if (a.getPrice() != b.getPrice()) return Double.compare(b.getPrice(), a.getPrice());
-            return Float.compare(b.getTimestamp(), a.getTimestamp());
+            return Double.compare(b.getTimestamp(), a.getTimestamp());
         });
 
         asks = new PriorityQueue<>((a, b) -> {
             if (a.getPrice() != b.getPrice())  return Double.compare(a.getPrice(), b.getPrice());
-            return Float.compare(b.getTimestamp(), a.getTimestamp());
+            return Double.compare(b.getTimestamp(), a.getTimestamp());
         });
     }
 

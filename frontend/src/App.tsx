@@ -1,21 +1,29 @@
 import './App.css';
-import io, { Socket } from "socket.io-client";
-import { useEffect, useState } from 'react';
+import io from "socket.io-client";
+import { useEffect } from 'react';
 
 function App() {
-    const [socket, setSocket] = useState<Socket>();
-    useEffect(() => {
-        if (socket) {
-            return;
-        }
+    function handleExecution(execution: string) {
+        console.log(execution);
+    }
 
+    function handleOHLCEvent(ohlcEvent: string) {
+        console.log(ohlcEvent);
+    }
+
+    useEffect(() => {
         const ws = io('http://localhost:3000');
         ws.on('connect', () => {
             console.log("Connected!");
         });
 
-        setSocket(socket);
-    }, [socket]);
+        ws.on('execution', handleExecution);
+        ws.on('ohlc-event', handleOHLCEvent);
+
+        return () => {
+            ws?.disconnect();
+        }
+    }, []);
 
     return (
         <p>yo</p>

@@ -25,7 +25,6 @@ server.listen(3000, () => {
 });
 
 consume({
-    onExecution: (execution) => {
-        console.log(execution);
-    }
+    onExecution: (execution) => io.emit('execution', execution),
+    onOHLCEvent: (ohlcEvent) => io.emit("ohlc-event", ohlcEvent)
 });

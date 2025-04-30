@@ -20,14 +20,18 @@ public class MatchingEngine {
         OrderBook orderBook = orderBookManager.getOrCreateOrderBook(order.getTicker());
 
         switch (order.getType()) {
-            case MARKET -> matchMarketOrder(order, orderBook);
+            case LIMIT -> matchLimitOrder(order, orderBook);
         }
     }
 
-    private void matchMarketOrder(final Order order, final OrderBook orderBook) {
+    private void matchLimitOrder(final Order order, final OrderBook orderBook) {
         if (order.getSide() == OrderSide.BUY) {
             while (order.getQuantity() > 0 && orderBook.getLowestAsk() != null) {
                 Order lowestAsk = orderBook.getLowestAsk();
+                if (lowestAsk.getPrice() > order.getPrice()) {
+                    break;
+                }
+
                 int buyQty = Math.min(order.getQuantity(), lowestAsk.getQuantity());
                 lowestAsk.decreaseQuantity(buyQty);
 
@@ -46,6 +50,10 @@ public class MatchingEngine {
         } else {
             while (order.getQuantity() > 0 && orderBook.getHighestBid() != null) {
                 Order highestBid = orderBook.getHighestBid();
+                if (highestBid.getPrice() < order.getPrice()) {
+                    break;
+                }
+                
                 int sellQty = Math.min(order.getQuantity(), highestBid.getQuantity());
                 highestBid.decreaseQuantity(sellQty);
 

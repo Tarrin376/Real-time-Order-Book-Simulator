@@ -20,8 +20,10 @@ logging.basicConfig(
 sys.stdout.reconfigure(line_buffering=True)
 
 class TradingClient:
-    _tickers = ["AAPL", "TSLA", "META", "GOOG"]
-    _order_types = ["LIMIT", "MARKET"]
+    tickers = ["AAPL", "TSLA", "META", "GOOG"]
+    order_types = ["LIMIT"]
+    base_prices = {"AAPL": 100, "TSLA": 200, "META": 300, "GOOG": 400}
+    volatility = 4
 
     def __init__(self):
         self.logger = logging.getLogger('trading-client')
@@ -47,18 +49,19 @@ class TradingClient:
             time.sleep(0.3)
         
     def generate_order(self):
+        ticker = random.choice(self.tickers)
         return {
-            "type": random.choice(self._order_types),
+            "type": random.choice(self.order_types),
             "side": random.choice(["BUY", "SELL"]),
-            "ticker": random.choice(self._tickers),
-            "price": round(random.random() * 200, 2),
+            "ticker": ticker,
+            "price": "%.2f" % (self.base_prices[ticker] + (random.random() * 2 - 1) * self.volatility),
             "quantity": random.randrange(1, 100),
-            "order_id": str(uuid.uuid4()),
+            "orderId": str(uuid.uuid4()),
             "timestamp": time.time()
         }
 
     def send_order(self, order):
-        self.logger.info(f"Sending order: [{order['order_id']}] {order['type']} {order['side']} " + 
+        self.logger.info(f"Sending order: [{order['orderId']}] {order['type']} {order['side']} " + 
                         f"{order['ticker']} | £{order['price']} x{order['quantity']} ({order['timestamp']})")
         self.producer.produce('orders', key=order['ticker'], value=json.dumps(order).encode('utf-8'))
 

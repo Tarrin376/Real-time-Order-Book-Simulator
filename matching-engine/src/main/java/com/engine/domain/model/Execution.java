@@ -16,14 +16,26 @@ public class Execution {
     @JsonProperty("delta")
     private final int delta;
 
+    @JsonProperty("timestamp")
+    private final double timestamp;
+
     public Execution(final OrderSide side, final String ticker, final double price, final int delta) {
         this.side = side;
         this.ticker = ticker;
         this.price = price;
         this.delta = delta;
+        this.timestamp = (double)System.currentTimeMillis() / 1000;
     }
 
     public String getTicker() {
         return ticker;
+    }
+
+    public double getPrice() {
+        return price;
+    }
+
+    public double getTimestamp() {
+        return timestamp;
     }
 }
