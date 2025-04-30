@@ -9,6 +9,9 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import org.apache.kafka.clients.producer.ProducerRecord;
 
 import com.engine.domain.model.Execution;
@@ -19,26 +22,30 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class OHLCDataAggregator implements EventSerializer<OHLC> {
+    private static final Logger logger = LoggerFactory.getLogger(OHLCDataAggregator.class);
+    private final int flushPeriod = 10;
+
     private final KafkaProducerAdapter<OHLC> producerAdapter;
-    private final ConcurrentHashMap<String, List<Execution>> buffers;
+    private final ConcurrentHashMap<String, List<Execution>> securityBuffers;
 
     public OHLCDataAggregator(final Properties properties) {
-        this.buffers = new ConcurrentHashMap<>();
+        this.securityBuffers = new ConcurrentHashMap<>();
         this.producerAdapter = new KafkaProducerAdapter<>(properties, this);
         scheduleFlush();
     }
 
     public void addToBuffer(final Execution exec) {
-        if (!buffers.containsKey(exec.getTicker())) {
-            buffers.put(exec.getTicker(), Collections.synchronizedList(new ArrayList<>()));
+        String security = exec.getSecurity();
+        if (!securityBuffers.containsKey(security)) {
+            securityBuffers.put(security, Collections.synchronizedList(new ArrayList<>()));
         }
 
-        buffers.get(exec.getTicker()).add(exec);
+        securityBuffers.get(security).add(exec);
     }
 
     public final void scheduleFlush() {
         Executors.newSingleThreadScheduledExecutor().scheduleAtFixedRate(() -> {
-            for (Map.Entry<String, List<Execution>> pair : buffers.entrySet()) {
+            for (Map.Entry<String, List<Execution>> pair : securityBuffers.entrySet()) {
                 String ticker = pair.getKey();
                 List<Execution> buffer = pair.getValue();
 
@@ -53,11 +60,13 @@ public class OHLCDataAggregator implements EventSerializer<OHLC> {
                     double close = getClose(buffer);
 
                     OHLC ohlc = new OHLC(open, high, low, close, ticker, getStartTimestamp(buffer), getEndTimestamp(buffer));
+                    logger.info("Sending OHLC: " + ohlc);
+
                     producerAdapter.produce(ohlc);
                     buffer.clear();
                 }
             }
-        }, 10, 10, TimeUnit.SECONDS);
+        }, flushPeriod, flushPeriod, TimeUnit.SECONDS);
     }
 
     private double getOpen(final List<Execution> buffer) {
@@ -97,9 +106,9 @@ public class OHLCDataAggregator implements EventSerializer<OHLC> {
         try {
             ObjectMapper objectMapper = new ObjectMapper();
             String json = objectMapper.writeValueAsString(ohlc);
-            return new ProducerRecord<>("ohlc-events", ohlc.getTicker(), json);
+            return new ProducerRecord<>("ohlc-events", ohlc.getSecurity(), json);
         } catch (JsonProcessingException e) {
-            System.out.println("Failed to serialize ohlc event");
+            logger.error("Failed to serialize ohlc event: " + e.getMessage());
             return null;
         }
     }

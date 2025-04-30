@@ -4,6 +4,8 @@ import java.util.Arrays;
 import java.util.Properties;
 
 import org.apache.kafka.common.serialization.StringDeserializer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.engine.domain.model.Order;
 import com.engine.interfaces.EventDeserializer;
@@ -13,9 +15,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class OrderHandler implements EventHandler<Order>, EventDeserializer<Order> {
-    private final String bootstrapServers = System.getenv().getOrDefault("KAFKA_BOOTSTRAP_SERVERS", "localhost:9092");
     private final Properties properties = new Properties() {{
-        put("bootstrap.servers", bootstrapServers);
+        put("bootstrap.servers", System.getenv().getOrDefault("KAFKA_BOOTSTRAP_SERVERS", "localhost:9092"));
         put("key.deserializer", StringDeserializer.class.getCanonicalName());
         put("value.deserializer", StringDeserializer.class.getCanonicalName());
         put("group.id", "matching-engine");
@@ -23,6 +24,7 @@ public class OrderHandler implements EventHandler<Order>, EventDeserializer<Orde
         put("auto.offset.reset", "earliest");
     }};
 
+    private static final Logger logger = LoggerFactory.getLogger(OrderHandler.class);
     private final MatchingEngine matchingEngine;
 
     public OrderHandler(final MatchingEngine matchingEngine) {
@@ -44,7 +46,7 @@ public class OrderHandler implements EventHandler<Order>, EventDeserializer<Orde
             ObjectMapper mapper = new ObjectMapper();
             return mapper.readValue(json, Order.class);
         } catch (JsonProcessingException e) {
-            System.out.println("Failed to read order: " + json);
+            logger.error("Failed to read order: " + json);
             return null;
         }
     }

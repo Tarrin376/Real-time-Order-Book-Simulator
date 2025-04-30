@@ -5,6 +5,9 @@ import java.util.Properties;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.serialization.StringSerializer;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.engine.domain.model.Execution;
 import com.engine.interfaces.EventSerializer;
 import com.engine.kafka.KafkaProducerAdapter;
@@ -12,14 +15,14 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class ExecutionHandler implements EventSerializer<Execution> {
-    private final String bootstrapServers = System.getenv().getOrDefault("KAFKA_BOOTSTRAP_SERVERS", "localhost:9092");
     private final Properties properties = new Properties() {{
-        put("bootstrap.servers", bootstrapServers);
+        put("bootstrap.servers", System.getenv().getOrDefault("KAFKA_BOOTSTRAP_SERVERS", "localhost:9092"));
         put("key.serializer", StringSerializer.class.getCanonicalName());
         put("value.serializer", StringSerializer.class.getCanonicalName());
         put("acks", "all");
     }};
 
+    private static final Logger logger = LoggerFactory.getLogger(ExecutionHandler.class);
     private final KafkaProducerAdapter<Execution> producerAdapter;
     private final OHLCDataAggregator ohlcDataAggregator;
 
@@ -38,10 +41,10 @@ public class ExecutionHandler implements EventSerializer<Execution> {
         try {
             ObjectMapper objectMapper = new ObjectMapper();
             String json = objectMapper.writeValueAsString(exec);
-            System.out.println("Executed: " + json);
-            return new ProducerRecord<>("executions", exec.getTicker(), json);
+            logger.info("Executed: " + exec);
+            return new ProducerRecord<>("executions", exec.getSecurity(), json);
         } catch (JsonProcessingException e) {
-            System.out.println("Failed to serialize execution");
+            logger.error("Failed to serialize execution: " + e.getMessage());
             return null;
         }
     }

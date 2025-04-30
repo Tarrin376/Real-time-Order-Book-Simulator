@@ -1,5 +1,7 @@
 package com.engine.domain.model;
 
+import java.util.Date;
+
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class OHLC {
@@ -15,8 +17,8 @@ public class OHLC {
     @JsonProperty("close")
     private final double close;
 
-    @JsonProperty("ticker")
-    private final String ticker;
+    @JsonProperty("security")
+    private final String security;
 
     @JsonProperty("startTimestamp")
     private final double startTimestamp;
@@ -25,17 +27,28 @@ public class OHLC {
     private final double endTimestamp;
 
     public OHLC(final double open, final double high, final double low, final double close, 
-        final String ticker, final double startTimestamp, final double endTimestamp) {
+        final String security, final double startTimestamp, final double endTimestamp) {
         this.open = open;
         this.high = high;
         this.low = low;
         this.close = close;
-        this.ticker = ticker;
+        this.security = security;
         this.startTimestamp = startTimestamp;
         this.endTimestamp = endTimestamp;
     }
 
-    public String getTicker() {
-        return ticker;
+    public String getSecurity() {
+        return security;
+    }
+
+    private String toDateString(final double timestamp) {
+        Date date = new Date((long)(timestamp * 1000));
+        return date.toString();
+    }
+
+    @Override
+    public String toString() {
+        return "[" + security + "]" + " Open: " + open + " | High: " + high + " | Low: " + low + " | Close: " + close + 
+        " (From: " + toDateString(startTimestamp) + ", To: " + toDateString(endTimestamp) + ")";
     }
 }

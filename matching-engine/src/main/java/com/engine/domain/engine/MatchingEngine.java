@@ -1,5 +1,8 @@
 package com.engine.domain.engine;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.engine.domain.model.Execution;
 import com.engine.domain.model.Order;
 import com.engine.domain.orderbook.OrderBook;
@@ -7,6 +10,7 @@ import com.engine.domain.orderbook.OrderBookManager;
 import com.engine.enums.OrderSide;
 
 public class MatchingEngine {
+    private static final Logger logger = LoggerFactory.getLogger(MatchingEngine.class);
     private final ExecutionHandler executionHandler;
     private final OrderBookManager orderBookManager;
 
@@ -16,8 +20,8 @@ public class MatchingEngine {
     }
 
     public void processNewOrder(final Order order) {
-        System.out.println("Received order: " + order);
-        OrderBook orderBook = orderBookManager.getOrCreateOrderBook(order.getTicker());
+        logger.info("Received order: " + order);
+        OrderBook orderBook = orderBookManager.getOrCreateOrderBook(order.getSecurity());
 
         switch (order.getType()) {
             case LIMIT -> matchLimitOrder(order, orderBook);
@@ -39,12 +43,12 @@ public class MatchingEngine {
                     orderBook.removeLowestAsk();
                 }
 
-                executionHandler.sendExecution(new Execution(OrderSide.SELL, order.getTicker(), lowestAsk.getPrice(), -buyQty));
+                executionHandler.sendExecution(new Execution(lowestAsk.getId(), OrderSide.SELL, lowestAsk.getSecurity(), lowestAsk.getPrice(), -buyQty));
                 order.decreaseQuantity(buyQty);
             }
 
             if (!order.isFilled()) {
-                executionHandler.sendExecution(new Execution(OrderSide.BUY, order.getTicker(), order.getPrice(), order.getQuantity()));
+                executionHandler.sendExecution(new Execution(order.getId(), OrderSide.BUY, order.getSecurity(), order.getPrice(), order.getQuantity()));
                 orderBook.addBid(order);
             }
         } else {
@@ -53,7 +57,7 @@ public class MatchingEngine {
                 if (highestBid.getPrice() < order.getPrice()) {
                     break;
                 }
-                
+
                 int sellQty = Math.min(order.getQuantity(), highestBid.getQuantity());
                 highestBid.decreaseQuantity(sellQty);
 
@@ -61,12 +65,12 @@ public class MatchingEngine {
                     orderBook.removeHighestBid();
                 }
 
-                executionHandler.sendExecution(new Execution(OrderSide.BUY, order.getTicker(), highestBid.getPrice(), -sellQty));
+                executionHandler.sendExecution(new Execution(highestBid.getId(), OrderSide.BUY, highestBid.getSecurity(), highestBid.getPrice(), -sellQty));
                 order.decreaseQuantity(sellQty);
             }
 
             if (!order.isFilled()) {
-                executionHandler.sendExecution(new Execution(OrderSide.SELL, order.getTicker(), order.getPrice(), order.getQuantity()));
+                executionHandler.sendExecution(new Execution(order.getId(), OrderSide.SELL, order.getSecurity(), order.getPrice(), order.getQuantity()));
                 orderBook.addAsk(order);
             }
         }

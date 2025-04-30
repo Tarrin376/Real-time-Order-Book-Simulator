@@ -1,5 +1,7 @@
 package com.engine.domain.model;
 
+import java.util.Date;
+
 import com.engine.enums.OrderSide;
 import com.engine.enums.OrderType;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -11,8 +13,8 @@ public class Order {
     @JsonProperty("side")
     private OrderSide side;
 
-    @JsonProperty("ticker")
-    private String ticker;
+    @JsonProperty("security")
+    private String security;
 
     @JsonProperty("price")
     private double price;
@@ -28,7 +30,7 @@ public class Order {
 
     public OrderType getType() { return type; }
     public OrderSide getSide() { return side; }
-    public String getTicker() { return ticker; }
+    public String getSecurity() { return security; }
     public double getPrice() { return price; }
     public int getQuantity() { return quantity; }
     public String getId() { return id; }
@@ -42,8 +44,13 @@ public class Order {
         return quantity == 0;
     }
 
+    private String timestampToString() {
+        Date date = new Date((long)(timestamp * 1000));
+        return date.toString();
+    }
+
     @Override
     public String toString() {
-        return "[" + id + "] " + type + " " + side + " " + ticker + " | £" + price + " x" + quantity + " (" + timestamp + ")";
+        return "[" + id + "] " + type + " " + side + " " + security + " | £" + price + " " + quantity + "x (" + timestampToString() + ")";
     }
 }

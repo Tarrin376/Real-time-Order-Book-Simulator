@@ -1,8 +1,9 @@
 from confluent_kafka import Producer
-import socket
+from random import random, choice, randrange
+from uuid import uuid4
+
 import time
-import random
-import uuid
+import socket
 import json
 import logging
 import sys
@@ -20,9 +21,8 @@ logging.basicConfig(
 sys.stdout.reconfigure(line_buffering=True)
 
 class TradingClient:
-    tickers = ["AAPL", "TSLA", "META", "GOOG"]
     order_types = ["LIMIT"]
-    base_prices = {"AAPL": 100, "TSLA": 200, "META": 300, "GOOG": 400}
+    securities = {"AAPL": 100, "TSLA": 200, "META": 300, "GOOG": 400}
     volatility = 4
 
     def __init__(self):
@@ -49,21 +49,24 @@ class TradingClient:
             time.sleep(0.3)
         
     def generate_order(self):
-        ticker = random.choice(self.tickers)
+        security = choice(list(self.securities.keys()))
         return {
-            "type": random.choice(self.order_types),
-            "side": random.choice(["BUY", "SELL"]),
-            "ticker": ticker,
-            "price": "%.2f" % (self.base_prices[ticker] + (random.random() * 2 - 1) * self.volatility),
-            "quantity": random.randrange(1, 100),
-            "orderId": str(uuid.uuid4()),
+            "type": choice(self.order_types),
+            "side": choice(["BUY", "SELL"]),
+            "security": security,
+            "price": "%.2f" % (self.securities[security] + (random() * 2 - 1) * self.volatility),
+            "quantity": randrange(1, 100),
+            "orderId": str(uuid4()),
             "timestamp": time.time()
         }
 
+    def timestampToString(self, timestamp):
+        return time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(timestamp))
+
     def send_order(self, order):
         self.logger.info(f"Sending order: [{order['orderId']}] {order['type']} {order['side']} " + 
-                        f"{order['ticker']} | £{order['price']} x{order['quantity']} ({order['timestamp']})")
-        self.producer.produce('orders', key=order['ticker'], value=json.dumps(order).encode('utf-8'))
+                        f"{order['security']} | £{order['price']} {order['quantity']}x ({self.timestampToString(order['timestamp'])})")
+        self.producer.produce('orders', key=order['security'], value=json.dumps(order).encode('utf-8'))
 
 if __name__ == "__main__":
     TradingClient()
