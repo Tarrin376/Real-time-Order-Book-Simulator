@@ -11,12 +11,12 @@ public class OrderBook {
     public OrderBook() {
         bids = new PriorityQueue<>((a, b) -> {
             if (a.getPrice() != b.getPrice()) return Double.compare(b.getPrice(), a.getPrice());
-            return Double.compare(b.getTimestamp(), a.getTimestamp());
+            return Double.compare(a.getTimestamp(), b.getTimestamp());
         });
 
         asks = new PriorityQueue<>((a, b) -> {
             if (a.getPrice() != b.getPrice())  return Double.compare(a.getPrice(), b.getPrice());
-            return Double.compare(b.getTimestamp(), a.getTimestamp());
+            return Double.compare(a.getTimestamp(), b.getTimestamp());
         });
     }
 
@@ -46,5 +46,9 @@ public class OrderBook {
 
     public void addAsk(final Order ask) {
         asks.offer(ask);
+    }
+
+    public void cancelOrder(final Order order) {
+        // Cancel the order
     }
 }

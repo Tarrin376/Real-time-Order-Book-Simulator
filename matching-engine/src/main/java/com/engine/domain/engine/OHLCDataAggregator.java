@@ -9,10 +9,9 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.kafka.clients.producer.ProducerRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import org.apache.kafka.clients.producer.ProducerRecord;
 
 import com.engine.domain.model.Execution;
 import com.engine.domain.model.OHLC;
@@ -22,7 +21,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class OHLCDataAggregator implements EventSerializer<OHLC> {
-    private static final Logger logger = LoggerFactory.getLogger(OHLCDataAggregator.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(OHLCDataAggregator.class);
     private final int flushPeriod = 10;
 
     private final KafkaProducerAdapter<OHLC> producerAdapter;
@@ -60,7 +59,7 @@ public class OHLCDataAggregator implements EventSerializer<OHLC> {
                     double close = getClose(buffer);
 
                     OHLC ohlc = new OHLC(open, high, low, close, ticker, getStartTimestamp(buffer), getEndTimestamp(buffer));
-                    logger.info("Sending OHLC: " + ohlc);
+                    LOGGER.info("Sending OHLC: " + ohlc);
 
                     producerAdapter.produce(ohlc);
                     buffer.clear();
@@ -108,7 +107,7 @@ public class OHLCDataAggregator implements EventSerializer<OHLC> {
             String json = objectMapper.writeValueAsString(ohlc);
             return new ProducerRecord<>("ohlc-events", ohlc.getSecurity(), json);
         } catch (JsonProcessingException e) {
-            logger.error("Failed to serialize ohlc event: " + e.getMessage());
+            LOGGER.error("Failed to serialize ohlc event: " + e.getMessage());
             return null;
         }
     }

@@ -48,7 +48,7 @@ public class OHLC {
 
     @Override
     public String toString() {
-        return "[" + security + "]" + " Open: " + open + " | High: " + high + " | Low: " + low + " | Close: " + close + 
-        " (From: " + toDateString(startTimestamp) + ", To: " + toDateString(endTimestamp) + ")";
+        return "[" + security + "]" + " Open: £" + open + " | High: £" + high + " | Low: £" + low + " | Close: £" + close + 
+        " (" + toDateString(startTimestamp) + " - " + toDateString(endTimestamp) + ")";
     }
 }

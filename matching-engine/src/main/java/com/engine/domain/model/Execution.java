@@ -1,5 +1,7 @@
 package com.engine.domain.model;
 
+import java.util.Date;
+
 import com.engine.enums.OrderSide;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -14,7 +16,7 @@ public class Execution {
     private final String security;
 
     @JsonProperty("price")
-    private final double price;
+    private final Double price;
 
     @JsonProperty("delta")
     private final int delta;
@@ -22,7 +24,7 @@ public class Execution {
     @JsonProperty("timestamp")
     private final double timestamp;
 
-    public Execution(final String id, final OrderSide side, final String security, final double price, final int delta) {
+    public Execution(final String id, final OrderSide side, final String security, final Double price, final int delta) {
         this.id = id;
         this.side = side;
         this.security = security;
@@ -35,7 +37,7 @@ public class Execution {
         return security;
     }
 
-    public double getPrice() {
+    public Double getPrice() {
         return price;
     }
 
@@ -43,8 +45,13 @@ public class Execution {
         return timestamp;
     }
 
+    private String timestampToString() {
+        Date date = new Date((long)(timestamp * 1000));
+        return date.toString();
+    }
+
     @Override
     public String toString() {
-        return "[" + id + "]" + side + " " + security + " | £" + price + " " + delta + "x (" + timestamp + ")";
+        return "[" + id + "] " + side + " " + security + " | £" + price + " (x" + delta + ") | " + timestampToString();
     }
 }

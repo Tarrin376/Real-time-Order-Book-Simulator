@@ -10,7 +10,7 @@ import com.engine.domain.orderbook.OrderBookManager;
 import com.engine.enums.OrderSide;
 
 public class MatchingEngine {
-    private static final Logger logger = LoggerFactory.getLogger(MatchingEngine.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(MatchingEngine.class);
     private final ExecutionHandler executionHandler;
     private final OrderBookManager orderBookManager;
 
@@ -20,19 +20,21 @@ public class MatchingEngine {
     }
 
     public void processNewOrder(final Order order) {
-        logger.info("Received order: " + order);
+        LOGGER.info("Received order: " + order);
         OrderBook orderBook = orderBookManager.getOrCreateOrderBook(order.getSecurity());
 
         switch (order.getType()) {
-            case LIMIT -> matchLimitOrder(order, orderBook);
+            case LIMIT -> matchLimitOrMarketOrder(order, orderBook);
+            case MARKET -> matchLimitOrMarketOrder(order, orderBook);
+            case CANCEL -> orderBook.cancelOrder(order);
         }
     }
 
-    private void matchLimitOrder(final Order order, final OrderBook orderBook) {
+    private void matchLimitOrMarketOrder(final Order order, final OrderBook orderBook) {
         if (order.getSide() == OrderSide.BUY) {
             while (order.getQuantity() > 0 && orderBook.getLowestAsk() != null) {
                 Order lowestAsk = orderBook.getLowestAsk();
-                if (lowestAsk.getPrice() > order.getPrice()) {
+                if (order.getPrice() != null && lowestAsk.getPrice() > order.getPrice()) {
                     break;
                 }
 
@@ -43,18 +45,18 @@ public class MatchingEngine {
                     orderBook.removeLowestAsk();
                 }
 
-                executionHandler.sendExecution(new Execution(lowestAsk.getId(), OrderSide.SELL, lowestAsk.getSecurity(), lowestAsk.getPrice(), -buyQty));
+                executionHandler.sendExecution(new Execution(lowestAsk.getId(), OrderSide.SELL, lowestAsk.getSecurity(), lowestAsk.getPrice(), buyQty));
                 order.decreaseQuantity(buyQty);
             }
 
-            if (!order.isFilled()) {
+            if (!order.isFilled() && order.getPrice() != null) {
                 executionHandler.sendExecution(new Execution(order.getId(), OrderSide.BUY, order.getSecurity(), order.getPrice(), order.getQuantity()));
                 orderBook.addBid(order);
             }
         } else {
             while (order.getQuantity() > 0 && orderBook.getHighestBid() != null) {
                 Order highestBid = orderBook.getHighestBid();
-                if (highestBid.getPrice() < order.getPrice()) {
+                if (order.getPrice() != null && highestBid.getPrice() < order.getPrice()) {
                     break;
                 }
 
@@ -65,11 +67,11 @@ public class MatchingEngine {
                     orderBook.removeHighestBid();
                 }
 
-                executionHandler.sendExecution(new Execution(highestBid.getId(), OrderSide.BUY, highestBid.getSecurity(), highestBid.getPrice(), -sellQty));
+                executionHandler.sendExecution(new Execution(highestBid.getId(), OrderSide.BUY, highestBid.getSecurity(), highestBid.getPrice(), sellQty));
                 order.decreaseQuantity(sellQty);
             }
 
-            if (!order.isFilled()) {
+            if (!order.isFilled() && order.getPrice() != null) {
                 executionHandler.sendExecution(new Execution(order.getId(), OrderSide.SELL, order.getSecurity(), order.getPrice(), order.getQuantity()));
                 orderBook.addAsk(order);
             }

@@ -17,10 +17,10 @@ public class Order {
     private String security;
 
     @JsonProperty("price")
-    private double price;
+    private Double price;
 
     @JsonProperty("quantity")
-    private int quantity;
+    private Integer quantity;
 
     @JsonProperty("orderId")
     private String id;
@@ -31,13 +31,15 @@ public class Order {
     public OrderType getType() { return type; }
     public OrderSide getSide() { return side; }
     public String getSecurity() { return security; }
-    public double getPrice() { return price; }
-    public int getQuantity() { return quantity; }
+    public Double getPrice() { return price; }
+    public Integer getQuantity() { return quantity; }
     public String getId() { return id; }
     public double getTimestamp() { return timestamp; }
 
     public void decreaseQuantity(final int amount) {
-        quantity -= Math.min(quantity, amount);
+        if (quantity != null) {
+            quantity -= Math.min(quantity, amount);
+        }
     }
 
     public boolean isFilled() {
@@ -51,6 +53,8 @@ public class Order {
 
     @Override
     public String toString() {
-        return "[" + id + "] " + type + " " + side + " " + security + " | £" + price + " " + quantity + "x (" + timestampToString() + ")";
+        final String priceStr = price != null ? "£" + price + " | " : "";
+        final String quantityStr = quantity != null ? "(x" + quantity + ") | " : "";
+        return "[" + id + "] " + type + " " + side + " " + security + " | " + priceStr + quantityStr + timestampToString();
     }
 }

@@ -2,7 +2,8 @@ package com.engine.enums;
 
 public enum OrderType {
     MARKET("MARKET"),
-    LIMIT("LIMIT");
+    LIMIT("LIMIT"),
+    CANCEL("CANCEL");
 
     private final String orderType;
 

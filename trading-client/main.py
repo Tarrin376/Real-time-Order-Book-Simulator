@@ -1,7 +1,8 @@
 from confluent_kafka import Producer
-from random import random, choice, randrange
 from uuid import uuid4
+from OrderGenerator import OrderGenerator
 
+import random
 import time
 import socket
 import json
@@ -21,13 +22,10 @@ logging.basicConfig(
 sys.stdout.reconfigure(line_buffering=True)
 
 class TradingClient:
-    order_types = ["LIMIT"]
-    securities = {"AAPL": 100, "TSLA": 200, "META": 300, "GOOG": 400}
-    volatility = 4
-
     def __init__(self):
         self.logger = logging.getLogger('trading-client')
         self.producer = self.get_kafka_producer()
+        self.order_generator = OrderGenerator()
         self.run()
 
     def get_kafka_producer(self):
@@ -44,28 +42,21 @@ class TradingClient:
         self.logger.info("Trading client started, beginning to generate orders...")
         
         while True:
-            order = self.generate_order()
-            self.send_order(order)
-            time.sleep(0.3)
-        
-    def generate_order(self):
-        security = choice(list(self.securities.keys()))
-        return {
-            "type": choice(self.order_types),
-            "side": choice(["BUY", "SELL"]),
-            "security": security,
-            "price": "%.2f" % (self.securities[security] + (random() * 2 - 1) * self.volatility),
-            "quantity": randrange(1, 100),
-            "orderId": str(uuid4()),
-            "timestamp": time.time()
-        }
+            order = self.order_generator.generate_order()
+            if order != None:
+                self.send_order(order)
+                time.sleep(0.3)
 
     def timestampToString(self, timestamp):
         return time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(timestamp))
 
     def send_order(self, order):
-        self.logger.info(f"Sending order: [{order['orderId']}] {order['type']} {order['side']} " + 
-                        f"{order['security']} | £{order['price']} {order['quantity']}x ({self.timestampToString(order['timestamp'])})")
+        price = f"£{order.get('price')} " if order.get('price') != None else ""
+        quantity = f"(x{order.get('quantity')}) | " if order.get('quantity') != None else ""
+
+        self.logger.info(f"Order ID: [{order['orderId']}] {order['type']} {order['side']} " + 
+                        f"{order['security']} | " + price + quantity + f"{self.timestampToString(order['timestamp'])}")
+        
         self.producer.produce('orders', key=order['security'], value=json.dumps(order).encode('utf-8'))
 
 if __name__ == "__main__":

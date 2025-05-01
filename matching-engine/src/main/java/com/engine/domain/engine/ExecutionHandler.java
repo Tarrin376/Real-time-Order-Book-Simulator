@@ -4,7 +4,6 @@ import java.util.Properties;
 
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.serialization.StringSerializer;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -22,7 +21,7 @@ public class ExecutionHandler implements EventSerializer<Execution> {
         put("acks", "all");
     }};
 
-    private static final Logger logger = LoggerFactory.getLogger(ExecutionHandler.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(ExecutionHandler.class);
     private final KafkaProducerAdapter<Execution> producerAdapter;
     private final OHLCDataAggregator ohlcDataAggregator;
 
@@ -41,10 +40,10 @@ public class ExecutionHandler implements EventSerializer<Execution> {
         try {
             ObjectMapper objectMapper = new ObjectMapper();
             String json = objectMapper.writeValueAsString(exec);
-            logger.info("Executed: " + exec);
+            LOGGER.info("Sending execution: " + exec);
             return new ProducerRecord<>("executions", exec.getSecurity(), json);
         } catch (JsonProcessingException e) {
-            logger.error("Failed to serialize execution: " + e.getMessage());
+            LOGGER.error("Failed to serialize execution: " + e.getMessage());
             return null;
         }
     }

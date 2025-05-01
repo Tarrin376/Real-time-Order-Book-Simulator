@@ -24,7 +24,7 @@ public class OrderHandler implements EventHandler<Order>, EventDeserializer<Orde
         put("auto.offset.reset", "earliest");
     }};
 
-    private static final Logger logger = LoggerFactory.getLogger(OrderHandler.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(OrderHandler.class);
     private final MatchingEngine matchingEngine;
 
     public OrderHandler(final MatchingEngine matchingEngine) {
@@ -46,7 +46,7 @@ public class OrderHandler implements EventHandler<Order>, EventDeserializer<Orde
             ObjectMapper mapper = new ObjectMapper();
             return mapper.readValue(json, Order.class);
         } catch (JsonProcessingException e) {
-            logger.error("Failed to read order: " + json);
+            LOGGER.error("Failed to read order: " + json);
             return null;
         }
     }
