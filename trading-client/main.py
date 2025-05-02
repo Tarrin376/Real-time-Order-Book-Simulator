@@ -53,9 +53,13 @@ class TradingClient:
     def send_order(self, order):
         price = f"£{order.get('price')} " if order.get('price') != None else ""
         quantity = f"(x{order.get('quantity')}) | " if order.get('quantity') != None else ""
+        fillOrKill = f"FOK " if order.get('fok') == True else ""
 
-        self.logger.info(f"Order ID: [{order['orderId']}] {order['type']} {order['side']} " + 
-                        f"{order['security']} | " + price + quantity + f"{self.timestampToString(order['timestamp'])}")
+        if order['type'] == "CANCEL":
+            self.logger.info(f"Order ID: [{order['orderId']}] " + f"{order['type']} {order['cancelOrderId']} {self.timestampToString(order['timestamp'])}")
+        else:
+            self.logger.info(f"Order ID: [{order['orderId']}] " + fillOrKill + f"{order['type']} {order['side']} " + 
+                            f"{order['security']} | " + price + quantity + f"{self.timestampToString(order['timestamp'])}")
         
         self.producer.produce('orders', key=order['security'], value=json.dumps(order).encode('utf-8'))
 

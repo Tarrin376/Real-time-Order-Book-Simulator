@@ -40,7 +40,7 @@ public class ExecutionHandler implements EventSerializer<Execution> {
         try {
             ObjectMapper objectMapper = new ObjectMapper();
             String json = objectMapper.writeValueAsString(exec);
-            LOGGER.info("Sending execution: " + exec);
+            LOGGER.info("Executed: " + exec);
             return new ProducerRecord<>("executions", exec.getSecurity(), json);
         } catch (JsonProcessingException e) {
             LOGGER.error("Failed to serialize execution: " + e.getMessage());

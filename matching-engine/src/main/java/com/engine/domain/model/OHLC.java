@@ -1,21 +1,22 @@
 package com.engine.domain.model;
 
 import java.util.Date;
+import java.math.BigDecimal;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class OHLC {
     @JsonProperty("open")
-    private final double open;
+    private final BigDecimal open;
 
     @JsonProperty("high")
-    private final double high;
+    private final BigDecimal high;
 
     @JsonProperty("low")
-    private final double low;
+    private final BigDecimal low;
 
     @JsonProperty("close")
-    private final double close;
+    private final BigDecimal close;
 
     @JsonProperty("security")
     private final String security;
@@ -26,7 +27,7 @@ public class OHLC {
     @JsonProperty("endTimestamp")
     private final double endTimestamp;
 
-    public OHLC(final double open, final double high, final double low, final double close, 
+    public OHLC(final BigDecimal open, final BigDecimal high, final BigDecimal low, final BigDecimal close, 
         final String security, final double startTimestamp, final double endTimestamp) {
         this.open = open;
         this.high = high;

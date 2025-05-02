@@ -36,13 +36,15 @@ class OrderGenerator:
             "type": order_type,
             "side": random.choice(["BUY", "SELL"]),
             "security": security,
-            "orderId": cancel_order_id,
+            "orderId": str(uuid4()),
+            "cancelOrderId": cancel_order_id,
             "timestamp": time.time()
         }
 
     def generate_market_or_limit_order(self, order_type, security):
         order = {
             "type": order_type,
+            "fok": random.choice([True, False, False, False]),
             "side": random.choice(["BUY", "SELL"]),
             "security": security,
             "quantity": random.randrange(1, 1000),

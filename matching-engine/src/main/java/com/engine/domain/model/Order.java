@@ -1,5 +1,6 @@
 package com.engine.domain.model;
 
+import java.math.BigDecimal;
 import java.util.Date;
 
 import com.engine.enums.OrderSide;
@@ -10,6 +11,12 @@ public class Order {
     @JsonProperty("type")
     private OrderType type;
 
+    @JsonProperty("fok")
+    private Boolean fillOrKill;
+
+    @JsonProperty("cancelOrderId")
+    private String cancelOrderId;
+
     @JsonProperty("side")
     private OrderSide side;
 
@@ -17,7 +24,7 @@ public class Order {
     private String security;
 
     @JsonProperty("price")
-    private Double price;
+    private BigDecimal price;
 
     @JsonProperty("quantity")
     private Integer quantity;
@@ -29,9 +36,11 @@ public class Order {
     private double timestamp;
 
     public OrderType getType() { return type; }
+    public Boolean getFillOrKill() { return fillOrKill; }
+    public String getCancelOrderId() { return cancelOrderId; }
     public OrderSide getSide() { return side; }
     public String getSecurity() { return security; }
-    public Double getPrice() { return price; }
+    public BigDecimal getPrice() { return price; }
     public Integer getQuantity() { return quantity; }
     public String getId() { return id; }
     public double getTimestamp() { return timestamp; }
@@ -53,8 +62,13 @@ public class Order {
 
     @Override
     public String toString() {
+        if (type == OrderType.CANCEL) {
+            return "[" + id + "] " + type + " " + cancelOrderId + " " + timestampToString();
+        }
+
         final String priceStr = price != null ? "£" + price + " | " : "";
         final String quantityStr = quantity != null ? "(x" + quantity + ") | " : "";
-        return "[" + id + "] " + type + " " + side + " " + security + " | " + priceStr + quantityStr + timestampToString();
+        final String fillOrKillStr = fillOrKill ? "FOK " : "";
+        return "[" + id + "] " + fillOrKillStr + type + " " + side + " " + security + " | " + priceStr + quantityStr + timestampToString();
     }
 }

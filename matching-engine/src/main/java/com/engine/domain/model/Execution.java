@@ -1,5 +1,6 @@
 package com.engine.domain.model;
 
+import java.math.BigDecimal;
 import java.util.Date;
 
 import com.engine.enums.OrderSide;
@@ -16,7 +17,7 @@ public class Execution {
     private final String security;
 
     @JsonProperty("price")
-    private final Double price;
+    private final BigDecimal price;
 
     @JsonProperty("delta")
     private final int delta;
@@ -24,7 +25,7 @@ public class Execution {
     @JsonProperty("timestamp")
     private final double timestamp;
 
-    public Execution(final String id, final OrderSide side, final String security, final Double price, final int delta) {
+    public Execution(final String id, final OrderSide side, final String security, final BigDecimal price, final int delta) {
         this.id = id;
         this.side = side;
         this.security = security;
@@ -37,7 +38,7 @@ public class Execution {
         return security;
     }
 
-    public Double getPrice() {
+    public BigDecimal getPrice() {
         return price;
     }
 
