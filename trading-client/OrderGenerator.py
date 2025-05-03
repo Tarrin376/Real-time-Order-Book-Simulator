@@ -7,7 +7,7 @@ class OrderGenerator:
     _generated_orders = {}
 
     _securities = {"AAPL": 100, "TSLA": 200, "META": 300, "GOOG": 400}
-    _volatility = 4
+    _volatility = 10
 
     def __init__(self):
         for security in self._securities.keys():

@@ -35,6 +35,8 @@ public class Order {
     @JsonProperty("timestamp")
     private double timestamp;
 
+    private boolean cancelled;
+
     public OrderType getType() { return type; }
     public Boolean getFillOrKill() { return fillOrKill; }
     public String getCancelOrderId() { return cancelOrderId; }
@@ -44,11 +46,16 @@ public class Order {
     public Integer getQuantity() { return quantity; }
     public String getId() { return id; }
     public double getTimestamp() { return timestamp; }
+    public boolean isCancelled() { return cancelled; }
 
     public void decreaseQuantity(final int amount) {
         if (quantity != null) {
             quantity -= Math.min(quantity, amount);
         }
+    }
+
+    public void cancelOrder() {
+        cancelled = true;
     }
 
     public boolean isFilled() {

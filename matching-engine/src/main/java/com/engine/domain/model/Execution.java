@@ -25,12 +25,16 @@ public class Execution {
     @JsonProperty("timestamp")
     private final double timestamp;
 
-    public Execution(final String id, final OrderSide side, final String security, final BigDecimal price, final int delta) {
+    @JsonProperty("seqId")
+    private final int seqId;
+
+    public Execution(final String id, final OrderSide side, final String security, final BigDecimal price, final int delta, final int seqId) {
         this.id = id;
         this.side = side;
         this.security = security;
         this.price = price;
         this.delta = delta;
+        this.seqId = seqId;
         this.timestamp = (double)System.currentTimeMillis() / 1000;
     }
 

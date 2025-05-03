@@ -1,11 +1,10 @@
-package com.engine.domain.engine;
+package com.engine.kafka.producers;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -16,22 +15,17 @@ import org.slf4j.LoggerFactory;
 
 import com.engine.domain.model.Execution;
 import com.engine.domain.model.OHLC;
-import com.engine.interfaces.EventSerializer;
-import com.engine.kafka.KafkaProducerAdapter;
+import com.engine.kafka.adapters.KafkaProducerAdapter;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-public class OHLCDataAggregator implements EventSerializer<OHLC> {
-    private static final Logger LOGGER = LoggerFactory.getLogger(OHLCDataAggregator.class);
+public class OHLCProducer extends KafkaProducerAdapter<OHLC> {
+    private final ConcurrentHashMap<String, List<Execution>> securityBuffers;
+    private static final Logger LOGGER = LoggerFactory.getLogger(OHLCProducer.class);
     private final int flushPeriod = 10;
 
-    private final KafkaProducerAdapter<OHLC> producerAdapter;
-    private final ConcurrentHashMap<String, List<Execution>> securityBuffers;
-
-    public OHLCDataAggregator(final Properties properties) {
+    public OHLCProducer() {
         this.securityBuffers = new ConcurrentHashMap<>();
-        this.producerAdapter = new KafkaProducerAdapter<>(properties, this);
-        scheduleFlush();
     }
 
     public void addToBuffer(final Execution exec) {
@@ -43,7 +37,7 @@ public class OHLCDataAggregator implements EventSerializer<OHLC> {
         securityBuffers.get(security).add(exec);
     }
 
-    public final void scheduleFlush() {
+    public final void run() {
         Executors.newSingleThreadScheduledExecutor().scheduleAtFixedRate(() -> {
             for (Map.Entry<String, List<Execution>> pair : securityBuffers.entrySet()) {
                 String ticker = pair.getKey();
@@ -62,7 +56,7 @@ public class OHLCDataAggregator implements EventSerializer<OHLC> {
                     OHLC ohlc = new OHLC(open, high, low, close, ticker, getStartTimestamp(buffer), getEndTimestamp(buffer));
                     LOGGER.info("Sending OHLC: " + ohlc);
 
-                    producerAdapter.produce(ohlc);
+                    produce(ohlc);
                     buffer.clear();
                 }
             }

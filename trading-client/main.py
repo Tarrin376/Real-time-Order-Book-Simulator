@@ -47,7 +47,7 @@ class TradingClient:
                 self.send_order(order)
                 time.sleep(0.3)
 
-    def timestampToString(self, timestamp):
+    def timestamp_to_string(self, timestamp):
         return time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(timestamp))
 
     def send_order(self, order):
@@ -56,10 +56,10 @@ class TradingClient:
         fillOrKill = f"FOK " if order.get('fok') == True else ""
 
         if order['type'] == "CANCEL":
-            self.logger.info(f"Order ID: [{order['orderId']}] " + f"{order['type']} {order['cancelOrderId']} {self.timestampToString(order['timestamp'])}")
+            self.logger.info(f"Order ID: [{order['orderId']}] " + f"{order['type']} {order['cancelOrderId']} {self.timestamp_to_string(order['timestamp'])}")
         else:
             self.logger.info(f"Order ID: [{order['orderId']}] " + fillOrKill + f"{order['type']} {order['side']} " + 
-                            f"{order['security']} | " + price + quantity + f"{self.timestampToString(order['timestamp'])}")
+                            f"{order['security']} | " + price + quantity + f"{self.timestamp_to_string(order['timestamp'])}")
         
         self.producer.produce('orders', key=order['security'], value=json.dumps(order).encode('utf-8'))
 

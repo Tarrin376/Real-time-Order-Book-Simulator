@@ -1,14 +1,22 @@
 package com.engine;
 
-import com.engine.domain.engine.ExecutionHandler;
 import com.engine.domain.engine.MatchingEngine;
-import com.engine.domain.engine.OrderHandler;
-import com.engine.domain.engine.OrderBookManager;
+import com.engine.domain.orderbook.OrderBookManager;
+import com.engine.kafka.producers.ExecutionProducer;
+import com.engine.kafka.producers.OHLCProducer;
+import com.engine.kafka.producers.OrderBookSnapshotProducer;
+import com.engine.kafka.consumers.OrderConsumer;
 
 public class App {
     public static void main(final String[] args) {
-        MatchingEngine matchingEngine = new MatchingEngine(new ExecutionHandler(), new OrderBookManager());
-        OrderHandler orderHandler = new OrderHandler(matchingEngine);
-        orderHandler.consumeOrders();
+        OrderBookManager orderBookManager = new OrderBookManager();
+        ExecutionProducer executionProducer = new ExecutionProducer(new OHLCProducer());
+        MatchingEngine matchingEngine = new MatchingEngine(executionProducer, orderBookManager);
+
+        OrderBookSnapshotProducer snapshotProducer = new OrderBookSnapshotProducer(orderBookManager);
+        snapshotProducer.run();
+
+        OrderConsumer orderConsumer = new OrderConsumer(matchingEngine);
+        orderConsumer.consume();
     }
 }

@@ -13,17 +13,20 @@ import org.slf4j.LoggerFactory;
 
 import com.engine.domain.model.Execution;
 import com.engine.domain.model.Order;
+import com.engine.domain.orderbook.OrderBookManager;
+import com.engine.domain.orderbook.OrderBook;
 import com.engine.enums.OrderSide;
 import com.engine.enums.OrderType;
+import com.engine.kafka.producers.ExecutionProducer;
 
 public class MatchingEngine {
     private static final Logger LOGGER = LoggerFactory.getLogger(MatchingEngine.class);
-    private final ExecutionHandler executionHandler;
+    private final ExecutionProducer executionHandler;
     private final OrderBookManager orderBookManager;
 
-    public MatchingEngine(final ExecutionHandler executionHandler, final OrderBookManager orderBookManager) {
-        this.executionHandler = executionHandler;
+    public MatchingEngine(final ExecutionProducer executionHandler, final OrderBookManager orderBookManager) {
         this.orderBookManager = orderBookManager;
+        this.executionHandler = executionHandler;
     }
 
     public void processNewOrder(final Order order) {
@@ -39,9 +42,9 @@ public class MatchingEngine {
 
     private boolean ordersMatch(final Order order, final BigDecimal price) {
         if (order.getSide() == OrderSide.BUY) {
-            return order.getPrice().compareTo(price) <= 0;
-        } else {
             return order.getPrice().compareTo(price) >= 0;
+        } else {
+            return order.getPrice().compareTo(price) <= 0;
         }
     }
 
@@ -60,13 +63,20 @@ public class MatchingEngine {
             Iterator<Order> orders = entry.getValue().iterator();
             while (orders.hasNext() && orderQuantity > 0) {
                 Order matchedOrder = orders.next();
+                if (matchedOrder.isCancelled()) {
+                    orders.remove();
+                    continue;
+                }
+
                 int quantity = Math.min(orderQuantity, matchedOrder.getQuantity());
-
                 if (!order.getFillOrKill()) {
-                    executionHandler.sendExecution(new Execution(matchedOrder.getId(), oppositeSide, matchedOrder.getSecurity(), matchedOrder.getPrice(), quantity));
-                    matchedOrder.decreaseQuantity(quantity);
+                    executionHandler.sendExecution(new Execution(
+                        matchedOrder.getId(), oppositeSide, matchedOrder.getSecurity(), 
+                        matchedOrder.getPrice(), quantity, orderBook.getSeqId()));
 
+                    matchedOrder.decreaseQuantity(quantity);
                     if (matchedOrder.isFilled()) {
+                        orderBook.removePendingOrder(matchedOrder);
                         orders.remove();
                     }
                 } else {
@@ -81,7 +91,10 @@ public class MatchingEngine {
             fillOrKillOrder(order, orderBook, oppositeSide);
         } else if (!order.isFilled() && order.getPrice() != null) {
             order.decreaseQuantity(order.getQuantity() - orderQuantity);
-            executionHandler.sendExecution(new Execution(order.getId(), order.getSide(), order.getSecurity(), order.getPrice(), order.getQuantity()));
+
+            executionHandler.sendExecution(new Execution(
+                order.getId(), order.getSide(), order.getSecurity(), order.getPrice(), 
+                order.getQuantity(), orderBook.getSeqId()));
 
             if (order.getSide() == OrderSide.BUY) {
                 orderBook.addBid(order);
@@ -93,7 +106,7 @@ public class MatchingEngine {
 
     private void fillOrKillOrder(final Order order, final OrderBook orderBook, final OrderSide oppositeSide) {
         if (!order.isFilled()) {
-            LOGGER.info("Order rejected: " + order + " (Insufficient liquidity to fulfill entire quantity)");
+            LOGGER.info("Order rejected: " + order + " (Insufficient liquidity)");
             return;
         }
 
@@ -104,12 +117,16 @@ public class MatchingEngine {
             while (orders.hasNext()) {
                 Order matchedOrder = orders.next();
                 int quantity = Math.min(order.getQuantity(), matchedOrder.getQuantity());
-                executionHandler.sendExecution(new Execution(matchedOrder.getId(), oppositeSide, matchedOrder.getSecurity(), matchedOrder.getPrice(), quantity));
+                
+                executionHandler.sendExecution(new Execution(
+                    matchedOrder.getId(), oppositeSide, matchedOrder.getSecurity(), 
+                    matchedOrder.getPrice(), quantity, orderBook.getSeqId()));
 
                 order.decreaseQuantity(quantity);
                 matchedOrder.decreaseQuantity(quantity);
 
                 if (matchedOrder.isFilled()) {
+                    orderBook.removePendingOrder(matchedOrder);
                     orders.remove();
                 }
 
