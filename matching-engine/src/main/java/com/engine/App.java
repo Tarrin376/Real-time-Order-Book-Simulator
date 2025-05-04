@@ -2,10 +2,10 @@ package com.engine;
 
 import com.engine.domain.engine.MatchingEngine;
 import com.engine.domain.orderbook.OrderBookManager;
+import com.engine.kafka.consumers.OrderConsumer;
 import com.engine.kafka.producers.ExecutionProducer;
 import com.engine.kafka.producers.OHLCProducer;
 import com.engine.kafka.producers.OrderBookSnapshotProducer;
-import com.engine.kafka.consumers.OrderConsumer;
 
 public class App {
     public static void main(final String[] args) {

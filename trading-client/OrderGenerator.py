@@ -7,7 +7,7 @@ class OrderGenerator:
     _generated_orders = {}
 
     _securities = {"AAPL": 100, "TSLA": 200, "META": 300, "GOOG": 400}
-    _volatility = 10
+    _volatility = 50
 
     def __init__(self):
         for security in self._securities.keys():
@@ -44,7 +44,6 @@ class OrderGenerator:
     def generate_market_or_limit_order(self, order_type, security):
         order = {
             "type": order_type,
-            "fok": random.choice([True, False, False, False]),
             "side": random.choice(["BUY", "SELL"]),
             "security": security,
             "quantity": random.randrange(1, 1000),
@@ -53,6 +52,6 @@ class OrderGenerator:
         }
 
         if order_type == "LIMIT":
-            order['price'] = "%.2f" % (self._securities[security] + (random.random() * 2 - 1) * self._volatility)
+            order['price'] = "%.2f" % (self._securities[security] + random.randrange(0, self._volatility))
         
         return order

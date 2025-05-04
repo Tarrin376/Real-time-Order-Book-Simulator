@@ -13,8 +13,6 @@ import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 
 public class OrderBookSnapshotSerializer extends StdSerializer<OrderBookSnapshot> {
-    private final int maxPriceLevel = 30;
-
     public OrderBookSnapshotSerializer() {
         this(null);
     }
@@ -41,13 +39,7 @@ public class OrderBookSnapshotSerializer extends StdSerializer<OrderBookSnapshot
     }
 
     private void writePriceLevels(final TreeMap<BigDecimal, TreeSet<Order>> levels, final JsonGenerator gen) throws IOException {
-        int priceLevel = 0;
-
         for (Map.Entry<BigDecimal, TreeSet<Order>> entry : levels.entrySet()) {
-            if (priceLevel > maxPriceLevel) {
-                break;
-            }
-
             if (!entry.getValue().isEmpty()) {
                 String price = entry.getKey().toPlainString();
                 gen.writeStartObject();
@@ -55,7 +47,6 @@ public class OrderBookSnapshotSerializer extends StdSerializer<OrderBookSnapshot
                 gen.writeNumberField("amount", entry.getValue().stream().reduce(0, (amount, order) -> amount + order.getQuantity(), Integer::sum));
                 gen.writeStringField("price", price);
                 gen.writeEndObject();
-                priceLevel++;
             }
         }
     }

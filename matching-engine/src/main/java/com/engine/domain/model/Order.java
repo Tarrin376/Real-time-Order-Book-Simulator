@@ -7,12 +7,9 @@ import com.engine.enums.OrderSide;
 import com.engine.enums.OrderType;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class Order {
+public class Order implements Comparable<Order> {
     @JsonProperty("type")
     private OrderType type;
-
-    @JsonProperty("fok")
-    private Boolean fillOrKill;
 
     @JsonProperty("cancelOrderId")
     private String cancelOrderId;
@@ -38,7 +35,6 @@ public class Order {
     private boolean cancelled;
 
     public OrderType getType() { return type; }
-    public Boolean getFillOrKill() { return fillOrKill; }
     public String getCancelOrderId() { return cancelOrderId; }
     public OrderSide getSide() { return side; }
     public String getSecurity() { return security; }
@@ -51,7 +47,23 @@ public class Order {
     public void decreaseQuantity(final int amount) {
         if (quantity != null) {
             quantity -= Math.min(quantity, amount);
-        }
+        } 
+    }
+
+    public Order copy() {
+        Order order = new Order();
+
+        order.type = this.type;
+        order.cancelOrderId = this.cancelOrderId;
+        order.side = this.side;
+        order.security = this.security;
+        order.price = this.price;
+        order.quantity = this.quantity;
+        order.id = this.id;
+        order.timestamp = this.timestamp;
+        order.cancelled = this.cancelled;
+
+        return order;
     }
 
     public void cancelOrder() {
@@ -75,7 +87,16 @@ public class Order {
 
         final String priceStr = price != null ? "£" + price + " | " : "";
         final String quantityStr = quantity != null ? "(x" + quantity + ") | " : "";
-        final String fillOrKillStr = fillOrKill ? "FOK " : "";
-        return "[" + id + "] " + fillOrKillStr + type + " " + side + " " + security + " | " + priceStr + quantityStr + timestampToString();
+        return "[" + id + "] " + type + " " + side + " " + security + " | " + priceStr + quantityStr + timestampToString();
+    }
+
+    @Override
+    public int compareTo(final Order other) {
+        int cmp = Double.compare(this.getTimestamp(), other.getTimestamp());
+        if (cmp != 0) {
+            return cmp;
+        }
+    
+        return this.getId().compareTo(other.getId());
     }
 }

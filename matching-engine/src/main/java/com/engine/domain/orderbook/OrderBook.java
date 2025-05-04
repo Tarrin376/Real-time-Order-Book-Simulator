@@ -3,26 +3,26 @@ package com.engine.domain.orderbook;
 import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.concurrent.locks.ReentrantLock;
 
 import com.engine.domain.model.Order;
 import com.engine.domain.model.OrderBookSnapshot;
 
 public class OrderBook {
-    public final TreeMap<BigDecimal, TreeSet<Order>> bids;
-    public final TreeMap<BigDecimal, TreeSet<Order>> asks;
+    private final TreeMap<BigDecimal, TreeSet<Order>> bids;
+    private final TreeMap<BigDecimal, TreeSet<Order>> asks;
 
+    // Thread confinement: only used by the matching engine thread
     private final Map<String, Order> pendingOrders;
+
     private final String security;
     private final AtomicInteger seqId;
-
-    private final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
-    private final ReentrantReadWriteLock.ReadLock readLock = lock.readLock();
-    private final ReentrantReadWriteLock.WriteLock writeLock = lock.writeLock();
+    public final ReentrantLock lock = new ReentrantLock();
 
     public OrderBook(final String security) {
         this.security = security;
@@ -37,43 +37,38 @@ public class OrderBook {
     }
 
     public void addBid(final Order bid) {
-        try {
-            writeLock.lock();
-            if (!bids.containsKey(bid.getPrice())) {
-                bids.put(bid.getPrice(), new TreeSet<>((a, b) -> Double.compare(a.getTimestamp(), b.getTimestamp())));
-            }
-
-            TreeSet orders = bids.get(bid.getPrice());
-            pendingOrders.put(bid.getId(), bid);
-            orders.add(bid);
-        } finally {
-            writeLock.unlock();
+        if (!bids.containsKey(bid.getPrice())) {
+            bids.put(bid.getPrice(), new TreeSet<>((a, b) -> a.compareTo(b)));
         }
+
+        TreeSet orders = bids.get(bid.getPrice());
+        pendingOrders.put(bid.getId(), bid);
+        orders.add(bid);
     }
 
     public void addAsk(final Order ask) {
-        try {
-            writeLock.lock();
-            if (!asks.containsKey(ask.getPrice())) {
-                asks.put(ask.getPrice(), new TreeSet<>((a, b) -> Double.compare(a.getTimestamp(), b.getTimestamp())));
-            }
-
-            TreeSet orders = asks.get(ask.getPrice());
-            pendingOrders.put(ask.getId(), ask);
-            orders.add(ask);
-        } finally {
-            writeLock.unlock();
+        if (!asks.containsKey(ask.getPrice())) {
+            asks.put(ask.getPrice(), new TreeSet<>((a, b) -> a.compareTo(b)));
         }
+
+        TreeSet orders = asks.get(ask.getPrice());
+        pendingOrders.put(ask.getId(), ask);
+        orders.add(ask);
     }
 
     public void cancelOrder(final Order order) {
-        if (!pendingOrders.containsKey(order.getCancelOrderId())) {
-            return;
-        }
+        try {
+            lock.lock();
+            if (!pendingOrders.containsKey(order.getCancelOrderId())) {
+                return;
+            }
 
-        Order cancelledOrder = pendingOrders.get(order.getCancelOrderId());
-        pendingOrders.remove(order.getCancelOrderId());
-        cancelledOrder.cancelOrder();
+            Order cancelledOrder = pendingOrders.get(order.getCancelOrderId());
+            pendingOrders.remove(order.getCancelOrderId());
+            cancelledOrder.cancelOrder();
+        } finally{
+            lock.unlock();
+        }
     }
 
     public void removePendingOrder(final Order order) {
@@ -84,12 +79,64 @@ public class OrderBook {
 
     public OrderBookSnapshot getSnapshot() {
         try {
-            readLock.lock();
+            lock.lock();
             OrderBookSnapshot orderBookSnapshot = new OrderBookSnapshot(security, bids, asks, seqId.intValue());
+            seqId.addAndGet(1);
             return orderBookSnapshot;
         } finally {
-            seqId.addAndGet(1);
-            readLock.unlock();
+            lock.unlock();
+        }
+    }
+
+    public class BIterator {
+        private BigDecimal bidLevel;
+        private BigDecimal askLevel;
+
+        private Iterator<Order> curBids;
+        private Iterator<Order> curAsks;
+
+        public BIterator() {
+            bidLevel = bids.isEmpty() ? null : bids.firstKey();
+            askLevel = asks.isEmpty() ? null : asks.firstKey();
+
+            curBids = bidLevel != null ? bids.get(bidLevel).iterator() : Collections.emptyIterator();
+            curAsks = askLevel != null ? asks.get(askLevel).iterator() : Collections.emptyIterator();
+        }
+
+        public Order nextAsk() {
+            while (!curAsks.hasNext() && askLevel != null) {
+                BigDecimal nextAskLevel = asks.higherKey(askLevel);
+                if (nextAskLevel == null) {
+                    break;
+                }
+
+                curAsks = asks.get(nextAskLevel).iterator();
+                askLevel = nextAskLevel;
+            }
+            
+            return curAsks.hasNext() ? curAsks.next() : null;
+        }
+
+        public Order nextBid() {
+            while (!curBids.hasNext() && bidLevel != null) {
+                BigDecimal nextBidLevel = bids.higherKey(bidLevel);
+                if (nextBidLevel == null) {
+                    break;
+                }
+
+                curBids = bids.get(nextBidLevel).iterator();
+                bidLevel = nextBidLevel;
+            }
+            
+            return curBids.hasNext() ? curBids.next() : null;
+        }
+
+        public void removeAsk() {
+            curAsks.remove();
+        }
+
+        public void removeBid() {
+            curBids.remove();
         }
     }
 }

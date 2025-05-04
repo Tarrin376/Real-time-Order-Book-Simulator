@@ -1,20 +1,14 @@
 package com.engine.domain.engine;
 
 import java.math.BigDecimal;
-import java.util.Iterator;
-import java.util.Queue;
-import java.util.LinkedList;
-import java.util.TreeSet;
-import java.util.Map;
-import java.util.TreeMap;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.engine.domain.model.Execution;
 import com.engine.domain.model.Order;
-import com.engine.domain.orderbook.OrderBookManager;
 import com.engine.domain.orderbook.OrderBook;
+import com.engine.domain.orderbook.OrderBookManager;
 import com.engine.enums.OrderSide;
 import com.engine.enums.OrderType;
 import com.engine.kafka.producers.ExecutionProducer;
@@ -49,95 +43,52 @@ public class MatchingEngine {
     }
 
     private void matchLimitOrMarketOrder(final Order order, final OrderBook orderBook) {
-        TreeMap<BigDecimal, TreeSet<Order>> orderMap = order.getSide() == OrderSide.BUY ? orderBook.asks : orderBook.bids;
         OrderSide oppositeSide = order.getSide() == OrderSide.BUY ? OrderSide.SELL : OrderSide.BUY;
+        OrderBook.BIterator iterator = orderBook.new BIterator();
 
-        Queue<Order> matchedOrders = new LinkedList<>();
-        int orderQuantity = order.getQuantity();
+        while (!order.isFilled()) {
+            try {
+                orderBook.lock.lock();
+                Order nextOrder = order.getSide() == OrderSide.BUY ? iterator.nextAsk() : iterator.nextBid();
+                if (nextOrder == null || (order.getType() == OrderType.LIMIT && !ordersMatch(order, nextOrder.getPrice()))) {
+                    break;
+                }
 
-        for (Map.Entry<BigDecimal, TreeSet<Order>> entry : orderMap.entrySet()) {
-            if (order.getType() == OrderType.LIMIT && !ordersMatch(order, entry.getKey())) {
-                break;
-            }
-
-            Iterator<Order> orders = entry.getValue().iterator();
-            while (orders.hasNext() && orderQuantity > 0) {
-                Order matchedOrder = orders.next();
-                if (matchedOrder.isCancelled()) {
-                    orders.remove();
+                if (nextOrder.isCancelled()) {
+                    if (nextOrder.getSide() == OrderSide.BUY) iterator.removeBid();
+                    else iterator.removeAsk();
                     continue;
                 }
 
-                int quantity = Math.min(orderQuantity, matchedOrder.getQuantity());
-                if (!order.getFillOrKill()) {
-                    executionHandler.sendExecution(new Execution(
-                        matchedOrder.getId(), oppositeSide, matchedOrder.getSecurity(), 
-                        matchedOrder.getPrice(), quantity, orderBook.getSeqId()));
-
-                    matchedOrder.decreaseQuantity(quantity);
-                    if (matchedOrder.isFilled()) {
-                        orderBook.removePendingOrder(matchedOrder);
-                        orders.remove();
-                    }
-                } else {
-                    matchedOrders.offer(order);
-                }
-
-                orderQuantity -= quantity;
-            }
-        }
-
-        if (order.getFillOrKill()) {
-            fillOrKillOrder(order, orderBook, oppositeSide);
-        } else if (!order.isFilled() && order.getPrice() != null) {
-            order.decreaseQuantity(order.getQuantity() - orderQuantity);
-
-            executionHandler.sendExecution(new Execution(
-                order.getId(), order.getSide(), order.getSecurity(), order.getPrice(), 
-                order.getQuantity(), orderBook.getSeqId()));
-
-            if (order.getSide() == OrderSide.BUY) {
-                orderBook.addBid(order);
-            } else {
-                orderBook.addAsk(order);
-            }
-        }
-    }
-
-    private void fillOrKillOrder(final Order order, final OrderBook orderBook, final OrderSide oppositeSide) {
-        if (!order.isFilled()) {
-            LOGGER.info("Order rejected: " + order + " (Insufficient liquidity)");
-            return;
-        }
-
-        for (Map.Entry<BigDecimal, TreeSet<Order>> entry : orderBook.asks.entrySet()) {
-            Iterator<Order> orders = entry.getValue().iterator();
-            boolean orderFilled = false;
-
-            while (orders.hasNext()) {
-                Order matchedOrder = orders.next();
-                int quantity = Math.min(order.getQuantity(), matchedOrder.getQuantity());
+                int quantity = Math.min(order.getQuantity(), nextOrder.getQuantity());
+                nextOrder.decreaseQuantity(quantity);
+                order.decreaseQuantity(quantity);
                 
                 executionHandler.sendExecution(new Execution(
-                    matchedOrder.getId(), oppositeSide, matchedOrder.getSecurity(), 
-                    matchedOrder.getPrice(), quantity, orderBook.getSeqId()));
+                    nextOrder.getId(), oppositeSide, nextOrder.getSecurity(), 
+                    nextOrder.getPrice(), quantity, orderBook.getSeqId()));
 
-                order.decreaseQuantity(quantity);
-                matchedOrder.decreaseQuantity(quantity);
-
-                if (matchedOrder.isFilled()) {
-                    orderBook.removePendingOrder(matchedOrder);
-                    orders.remove();
+                if (nextOrder.isFilled()) {
+                    orderBook.removePendingOrder(nextOrder);
+                    if (nextOrder.getSide() == OrderSide.BUY) iterator.removeBid();
+                    else iterator.removeAsk();
                 }
-
-                if (order.isFilled()) {
-                    orderFilled = true;
-                    break;
-                }
+            } finally {
+                orderBook.lock.unlock();
             }
+        }
 
-            if (orderFilled) {
-                break;
+        if (!order.isFilled() && order.getPrice() != null) {
+            try {
+                orderBook.lock.lock();
+                if (order.getSide() == OrderSide.BUY) orderBook.addBid(order);
+                else orderBook.addAsk(order);
+                
+                executionHandler.sendExecution(new Execution(
+                    order.getId(), order.getSide(), order.getSecurity(),
+                    order.getPrice(), order.getQuantity(), orderBook.getSeqId()));
+            } finally {
+                orderBook.lock.unlock();
             }
         }
     }
