@@ -2,6 +2,7 @@ package com.engine.domain.model;
 
 import java.math.BigDecimal;
 import java.util.Date;
+import java.util.UUID;
 
 import com.engine.enums.OrderSide;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -9,6 +10,9 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 public class Execution {
     @JsonProperty("orderId")
     private final String id;
+
+    @JsonProperty("id")
+    private final String executionId;
     
     @JsonProperty("side")
     private final OrderSide side;
@@ -36,6 +40,7 @@ public class Execution {
         this.delta = delta;
         this.seqId = seqId;
         this.timestamp = (double)System.currentTimeMillis() / 1000;
+        this.executionId = UUID.randomUUID().toString();
     }
 
     public String getSecurity() {

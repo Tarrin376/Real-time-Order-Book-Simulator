@@ -45,7 +45,7 @@ class TradingClient:
             order = self.order_generator.generate_order()
             if order != None:
                 self.send_order(order)
-                time.sleep(0.3)
+                time.sleep(0.1)
 
     def timestamp_to_string(self, timestamp):
         return time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(timestamp))

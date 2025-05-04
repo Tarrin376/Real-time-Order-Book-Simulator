@@ -41,7 +41,7 @@ public class OrderBookSnapshot {
                 continue;
             }
 
-            TreeSet<Order> orderCopies = new TreeSet<>((a, b) -> a.compareTo(b));
+            TreeSet<Order> orderCopies = new TreeSet<>();
             for (Order order : orders) {
                 orderCopies.add(order.copy());
             }

@@ -1,0 +1,127 @@
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: "Inter", sans-serif;
+    font-optical-sizing: auto;
+    font-weight: 400;
+    font-style: normal;
+}
+
+h2 {
+    color: rgb(237, 237, 237);
+    font-size: 18px;
+}
+
+.component {
+    background: linear-gradient(
+        to bottom,
+        #1e1e1e 0%,
+        #1f1f1f 30%,
+        #202020 60%,
+        #212121 100%
+    );
+    border-radius: 10px;
+    box-shadow: 3px 3px 3px 3px rgba(0, 0, 0, 0.2);
+    border: 1px solid rgb(47, 47, 47);
+    padding: 10px;
+}
+
+.main-page {
+    width: 100%;
+    height: 100vh;
+    background-color: rgb(23, 23, 23);
+    display: flex;
+    gap: 20px;
+    padding: 20px;
+}
+
+.order-book {
+    height: 350px;
+}
+
+.info-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    flex-grow: 1;
+}
+
+.chart-container {
+    flex-grow: 1;
+    padding: 0 !important;
+    overflow: hidden;
+    color: #343434;
+    padding-bottom: 20px;
+    border-bottom: 1px solid rgb(53, 53, 53);
+}
+
+.top-prices {
+    height: 420px;
+    margin-bottom: 10px;
+}
+
+.market-table-header > th {
+    text-align: left;
+    padding-bottom: 5px;
+}
+
+.market-table-header > th, .side-text {
+    font-size: 13px;
+    color: rgb(97, 97, 97);
+}
+
+.market-table {
+    width: 100%;
+    table-layout: fixed;
+    margin-top: 5px;
+}
+
+.market-table-data > td {
+    font-size: 13px;
+    color: rgb(219, 171, 161);
+}
+
+.buy-price {
+    color: #4caf50 !important;
+}
+
+.sell-price {
+    color: #e53935 !important;
+}
+
+.close-price-wrapper {
+    display: flex;
+    gap: 15px;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.close-price {
+    font-size: 18px;
+}
+
+.security-dropdown {
+    background: none;
+    border: none;
+    color: rgb(237, 237, 237);
+    font-size: 18px;
+}
+
+.security-dropdown > option {
+    color: black;
+    font-size: 1rem;
+    margin-top: 5px;
+}
+
+.security-close-info {
+    padding-right: 30px;
+    margin-right: 30px;
+    border-right: 1px solid rgb(53, 53, 53);
+    width: fit-content;
+}
+
+.market {
+    width: 300px;
+}

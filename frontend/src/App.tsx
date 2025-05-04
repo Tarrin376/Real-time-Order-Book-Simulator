@@ -1,32 +1,50 @@
 import './App.css';
-import io from "socket.io-client";
-import { useEffect } from 'react';
+import io, { Socket } from 'socket.io-client';
+import { useEffect, useState } from 'react';
+import CandleStickChart from './components/CandleStickChart/CandleStickChart';
+import SecurityInfo from './components/SecurityInfo/SecurityInfo';
+import { Security } from './types/Security';
+import Market from './components/Market/Market';
+import OrderBook from './components/OrderBook/OrderBook';
 
 function App() {
-    function handleExecution(execution: string) {
-        console.log(execution);
-    }
+    const [socket, setSocket] = useState<Socket>();
+    const [security, setSecurity] = useState<Security>("AAPL");
 
-    function handleOHLCEvent(ohlcEvent: string) {
-        console.log(ohlcEvent);
+    function changeSecurity(nextSecurity: Security) {
+        setSecurity(nextSecurity);
     }
 
     useEffect(() => {
         const ws = io('http://localhost:3000');
-        ws.on('connect', () => {
-            console.log("Connected!");
-        });
-
-        ws.on('execution', handleExecution);
-        ws.on('ohlc-event', handleOHLCEvent);
-
+        setSocket(ws);
         return () => {
             ws?.disconnect();
         }
     }, []);
 
     return (
-        <p>yo</p>
+        <div className="main-page">
+            <div className="info-wrapper">
+                <SecurityInfo 
+                    socket={socket} 
+                    security={security} 
+                    changeSecurity={changeSecurity} 
+                />
+                <CandleStickChart 
+                    socket={socket} 
+                    security={security} 
+                />
+                <OrderBook 
+                    socket={socket} 
+                    security={security} 
+                />
+            </div>
+            <Market 
+                socket={socket} 
+                security={security} 
+            />
+        </div>
     )
 }
 

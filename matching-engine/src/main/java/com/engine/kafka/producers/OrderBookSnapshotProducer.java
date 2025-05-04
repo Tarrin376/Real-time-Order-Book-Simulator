@@ -28,8 +28,10 @@ public class OrderBookSnapshotProducer extends KafkaProducerAdapter<OrderBookSna
     public void run() {
         Executors.newSingleThreadScheduledExecutor().scheduleAtFixedRate(() -> {
             for (OrderBook orderBook : orderBookManager.orderBooks.values()) {
-                OrderBookSnapshot snapshot = orderBook.getSnapshot();
-                produce(snapshot);
+                orderBook.withLock(() -> {
+                    produce(orderBook.getSnapshot());
+                    return null;
+                });
             }
         }, period, period, TimeUnit.SECONDS);
     }

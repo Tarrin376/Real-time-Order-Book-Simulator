@@ -9,6 +9,7 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.function.Supplier;
 
 import com.engine.domain.model.Order;
 import com.engine.domain.model.OrderBookSnapshot;
@@ -22,7 +23,7 @@ public class OrderBook {
 
     private final String security;
     private final AtomicInteger seqId;
-    public final ReentrantLock lock = new ReentrantLock();
+    private final ReentrantLock lock = new ReentrantLock();
 
     public OrderBook(final String security) {
         this.security = security;
@@ -32,13 +33,22 @@ public class OrderBook {
         seqId = new AtomicInteger();
     }
 
+    public <T> T withLock(Supplier<T> operation) {
+        try {
+            lock.lock();
+            return operation.get();
+        } finally {
+            lock.unlock();
+        }
+    }
+
     public int getSeqId() {
         return seqId.intValue();
     }
 
     public void addBid(final Order bid) {
         if (!bids.containsKey(bid.getPrice())) {
-            bids.put(bid.getPrice(), new TreeSet<>((a, b) -> a.compareTo(b)));
+            bids.put(bid.getPrice(), new TreeSet<>());
         }
 
         TreeSet orders = bids.get(bid.getPrice());
@@ -48,7 +58,7 @@ public class OrderBook {
 
     public void addAsk(final Order ask) {
         if (!asks.containsKey(ask.getPrice())) {
-            asks.put(ask.getPrice(), new TreeSet<>((a, b) -> a.compareTo(b)));
+            asks.put(ask.getPrice(), new TreeSet<>());
         }
 
         TreeSet orders = asks.get(ask.getPrice());
@@ -57,18 +67,13 @@ public class OrderBook {
     }
 
     public void cancelOrder(final Order order) {
-        try {
-            lock.lock();
-            if (!pendingOrders.containsKey(order.getCancelOrderId())) {
-                return;
-            }
-
-            Order cancelledOrder = pendingOrders.get(order.getCancelOrderId());
-            pendingOrders.remove(order.getCancelOrderId());
-            cancelledOrder.cancelOrder();
-        } finally{
-            lock.unlock();
+        if (!pendingOrders.containsKey(order.getCancelOrderId())) {
+            return;
         }
+
+        Order cancelledOrder = pendingOrders.get(order.getCancelOrderId());
+        pendingOrders.remove(order.getCancelOrderId());
+        cancelledOrder.cancelOrder();
     }
 
     public void removePendingOrder(final Order order) {
@@ -78,14 +83,9 @@ public class OrderBook {
     }
 
     public OrderBookSnapshot getSnapshot() {
-        try {
-            lock.lock();
-            OrderBookSnapshot orderBookSnapshot = new OrderBookSnapshot(security, bids, asks, seqId.intValue());
-            seqId.addAndGet(1);
-            return orderBookSnapshot;
-        } finally {
-            lock.unlock();
-        }
+        OrderBookSnapshot orderBookSnapshot = new OrderBookSnapshot(security, bids, asks, seqId.intValue());
+        seqId.addAndGet(1);
+        return orderBookSnapshot;
     }
 
     public class BIterator {

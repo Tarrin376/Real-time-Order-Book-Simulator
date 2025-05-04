@@ -6,12 +6,13 @@ dotenv.config();
 
 const consumer = new KafkaJS.Kafka().consumer({
     'bootstrap.servers': process.env.KAFKA_BOOTSTRAP_SERVERS ?? 'localhost:9092',
-    'group.id': 'event-gateway'
+    'group.id': 'event-gateway',
+    'auto.offset.reset': 'latest'
 });
 
-const topics = ["executions", "ohlc-events"];
+const topics = ["executions", "ohlc-events", "order-book-snapshots"];
 
-export async function consume({ onExecution, onOHLCEvent }) {
+export async function consume({ onExecution, onOHLCEvent, onOrderBookSnapshot }) {
     try {
         await consumer.connect();
         console.log("Kafka consumer connected successfully");
@@ -29,6 +30,9 @@ export async function consume({ onExecution, onOHLCEvent }) {
                             break;
                         case "ohlc-events": 
                             onOHLCEvent(value);
+                            break;
+                        case "order-book-snapshots":
+                            onOrderBookSnapshot(value);
                             break;
                         default: 
                             console.log(`Received event from unhandled topic: ${topic}`);

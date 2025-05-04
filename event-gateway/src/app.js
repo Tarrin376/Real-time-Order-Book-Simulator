@@ -14,17 +14,30 @@ const io = new Server(server, {
 });
 
 io.on('connection', (socket) => {
-    console.log("A user connected!");
-    socket.on('disconnect', () => {
-        console.log("A user disconnected.");
-    });
+    // to be completed
+});
+
+function handleExecution(execution) {
+    const execObj = JSON.parse(execution);
+    io.emit(`execution-${execObj['security']}`, execObj);
+}
+
+function handleOHLCEvent(ohlcEvent) {
+    const ohlcObj = JSON.parse(ohlcEvent);
+    io.emit(`ohlc-${ohlcObj['security']}`, ohlcObj);
+}
+
+function handleOrderBookSnapshot(snapshot) {
+    const snapshotObj = JSON.parse(snapshot);
+    io.emit(`snapshot-${snapshotObj['security']}`, snapshotObj);
+}
+
+consume({
+    onExecution: handleExecution,
+    onOHLCEvent: handleOHLCEvent,
+    onOrderBookSnapshot: handleOrderBookSnapshot
 });
 
 server.listen(3000, () => {
     console.log("Event gateway listening on port 3000");
-});
-
-consume({
-    onExecution: (execution) => io.emit('execution', execution),
-    onOHLCEvent: (ohlcEvent) => io.emit("ohlc-event", ohlcEvent)
 });

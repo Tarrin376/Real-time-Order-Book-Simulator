@@ -27,11 +27,11 @@ public class MatchingEngine {
         LOGGER.info("Received order: " + order);
         OrderBook orderBook = orderBookManager.getOrCreateOrderBook(order.getSecurity());
 
-        if (order.getType() == OrderType.LIMIT || order.getType() == OrderType.MARKET) {
-            matchLimitOrMarketOrder(order, orderBook);
-        } else {
-            orderBook.cancelOrder(order);
-        }
+        orderBook.withLock(() -> {
+            if (order.getType() == OrderType.CANCEL) orderBook.cancelOrder(order);
+            else matchLimitOrMarketOrder(order, orderBook);
+            return null;
+        });
     }
 
     private boolean ordersMatch(final Order order, final BigDecimal price) {
@@ -47,49 +47,39 @@ public class MatchingEngine {
         OrderBook.BIterator iterator = orderBook.new BIterator();
 
         while (!order.isFilled()) {
-            try {
-                orderBook.lock.lock();
-                Order nextOrder = order.getSide() == OrderSide.BUY ? iterator.nextAsk() : iterator.nextBid();
-                if (nextOrder == null || (order.getType() == OrderType.LIMIT && !ordersMatch(order, nextOrder.getPrice()))) {
-                    break;
-                }
+            Order nextOrder = order.getSide() == OrderSide.BUY ? iterator.nextAsk() : iterator.nextBid();
+            if (nextOrder == null || (order.getType() == OrderType.LIMIT && !ordersMatch(order, nextOrder.getPrice()))) {
+                break;
+            }
 
-                if (nextOrder.isCancelled()) {
-                    if (nextOrder.getSide() == OrderSide.BUY) iterator.removeBid();
-                    else iterator.removeAsk();
-                    continue;
-                }
+            if (nextOrder.isCancelled()) {
+                if (nextOrder.getSide() == OrderSide.BUY) iterator.removeBid();
+                else iterator.removeAsk();
+                continue;
+            }
 
-                int quantity = Math.min(order.getQuantity(), nextOrder.getQuantity());
-                nextOrder.decreaseQuantity(quantity);
-                order.decreaseQuantity(quantity);
-                
-                executionHandler.sendExecution(new Execution(
-                    nextOrder.getId(), oppositeSide, nextOrder.getSecurity(), 
-                    nextOrder.getPrice(), quantity, orderBook.getSeqId()));
+            int quantity = Math.min(order.getQuantity(), nextOrder.getQuantity());
+            nextOrder.decreaseQuantity(quantity);
+            order.decreaseQuantity(quantity);
+            
+            executionHandler.sendExecution(new Execution(
+                nextOrder.getId(), oppositeSide, nextOrder.getSecurity(), 
+                nextOrder.getPrice(), quantity, orderBook.getSeqId()));
 
-                if (nextOrder.isFilled()) {
-                    orderBook.removePendingOrder(nextOrder);
-                    if (nextOrder.getSide() == OrderSide.BUY) iterator.removeBid();
-                    else iterator.removeAsk();
-                }
-            } finally {
-                orderBook.lock.unlock();
+            if (nextOrder.isFilled()) {
+                orderBook.removePendingOrder(nextOrder);
+                if (nextOrder.getSide() == OrderSide.BUY) iterator.removeBid();
+                else iterator.removeAsk();
             }
         }
 
-        if (!order.isFilled() && order.getPrice() != null) {
-            try {
-                orderBook.lock.lock();
-                if (order.getSide() == OrderSide.BUY) orderBook.addBid(order);
-                else orderBook.addAsk(order);
-                
-                executionHandler.sendExecution(new Execution(
-                    order.getId(), order.getSide(), order.getSecurity(),
-                    order.getPrice(), order.getQuantity(), orderBook.getSeqId()));
-            } finally {
-                orderBook.lock.unlock();
-            }
+        if (!order.isFilled() && order.getType() == OrderType.LIMIT) {
+            if (order.getSide() == OrderSide.BUY) orderBook.addBid(order);
+            else orderBook.addAsk(order);
+            
+            executionHandler.sendExecution(new Execution(
+                order.getId(), order.getSide(), order.getSecurity(),
+                order.getPrice(), order.getQuantity(), orderBook.getSeqId()));
         }
     }
 }
