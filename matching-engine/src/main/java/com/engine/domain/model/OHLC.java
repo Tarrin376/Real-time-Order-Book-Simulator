@@ -1,7 +1,7 @@
 package com.engine.domain.model;
 
-import java.util.Date;
 import java.math.BigDecimal;
+import java.util.Date;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -21,21 +21,17 @@ public class OHLC {
     @JsonProperty("security")
     private final String security;
 
-    @JsonProperty("startTimestamp")
-    private final double startTimestamp;
-
-    @JsonProperty("endTimestamp")
-    private final double endTimestamp;
+    @JsonProperty("timestamp")
+    private final double timestamp;
 
     public OHLC(final BigDecimal open, final BigDecimal high, final BigDecimal low, final BigDecimal close, 
-        final String security, final double startTimestamp, final double endTimestamp) {
+        final String security, final double timestamp) {
         this.open = open;
         this.high = high;
         this.low = low;
         this.close = close;
         this.security = security;
-        this.startTimestamp = startTimestamp;
-        this.endTimestamp = endTimestamp;
+        this.timestamp = timestamp;
     }
 
     public String getSecurity() {
@@ -50,6 +46,6 @@ public class OHLC {
     @Override
     public String toString() {
         return "[" + security + "]" + " Open: £" + open + " | High: £" + high + " | Low: £" + low + " | Close: £" + close + 
-        " (" + toDateString(startTimestamp) + " - " + toDateString(endTimestamp) + ")";
+        " (" + toDateString(timestamp) + ")";
     }
 }

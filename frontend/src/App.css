@@ -53,8 +53,6 @@ h2 {
     padding: 0 !important;
     overflow: hidden;
     color: #343434;
-    padding-bottom: 20px;
-    border-bottom: 1px solid rgb(53, 53, 53);
 }
 
 .top-prices {
@@ -62,12 +60,12 @@ h2 {
     margin-bottom: 10px;
 }
 
-.market-table-header > th {
+.table-header > th {
     text-align: left;
     padding-bottom: 5px;
 }
 
-.market-table-header > th, .side-text {
+.table-header > th, .side-text {
     font-size: 13px;
     color: rgb(97, 97, 97);
 }
@@ -75,7 +73,21 @@ h2 {
 .market-table {
     width: 100%;
     table-layout: fixed;
+    border-collapse: collapse;
     margin-top: 5px;
+}
+
+.close-arrow-wrapper {
+    display: flex;
+    align-items: center;
+}
+
+.arrow-down {
+    transform: rotate(180deg);
+}
+
+.market-table-data {
+    border-bottom: 1px solid rgb(53, 53, 53);
 }
 
 .market-table-data > td {
@@ -88,12 +100,12 @@ h2 {
 }
 
 .sell-price {
-    color: #e53935 !important;
+    color: #e53552 !important;
 }
 
 .close-price-wrapper {
     display: flex;
-    gap: 15px;
+    gap: 10px;
     align-items: center;
     margin-bottom: 8px;
 }
@@ -107,6 +119,7 @@ h2 {
     border: none;
     color: rgb(237, 237, 237);
     font-size: 18px;
+    cursor: pointer;
 }
 
 .security-dropdown > option {
@@ -122,6 +135,61 @@ h2 {
     width: fit-content;
 }
 
-.market {
+.executions-wrapper {
     width: 300px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.security-wrapper {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.market {
+    flex-grow: 1;
+    background-color: red;
+}
+
+.cancelled-orders {
+    height: 350px;
+}
+
+.order-book-sides {
+    display: flex;
+}
+
+.side-table {
+    flex-grow: 1;
+    table-layout: fixed;
+    border-collapse: collapse;
+    height: 100%;
+}
+
+.side-table-data {
+    border-bottom: 1px solid rgb(53, 53, 53);
+    position: relative;
+}
+
+.side-table-data > td {
+    color: rgb(219, 171, 161);
+    font-size: 14px;
+}
+
+.bg-fill {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+}
+
+.bg-bid {
+    background-color: #25a52c30;
+}
+
+.bg-sell {
+    background-color: #bb1e382d;
 }

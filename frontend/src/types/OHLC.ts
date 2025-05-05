@@ -6,6 +6,5 @@ export type OHLC = {
     low: number,
     close: number,
     security: Security,
-    startTimestamp: number,
-    endTimestamp: number
+    timestamp: number
 }

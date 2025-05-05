@@ -25,29 +25,41 @@ public class OrderBookSnapshotSerializer extends StdSerializer<OrderBookSnapshot
     public void serialize(final OrderBookSnapshot snapshot, final JsonGenerator gen, final SerializerProvider provider) throws IOException {
         gen.writeStartObject();
         gen.writeStringField("security", snapshot.getSecurity());
-        gen.writeNumberField("seqId", snapshot.getSeqId());
-
+        
         gen.writeArrayFieldStart("bids");
-        writePriceLevels(snapshot.bids, gen);
+        writeBids(snapshot.bids, gen);
         gen.writeEndArray();
 
         gen.writeArrayFieldStart("asks");
-        writePriceLevels(snapshot.asks, gen);
+        writeAsks(snapshot.asks, gen);
         gen.writeEndArray();
 
         gen.writeEndObject();
     }
 
-    private void writePriceLevels(final TreeMap<BigDecimal, TreeSet<Order>> levels, final JsonGenerator gen) throws IOException {
+    private void writeAsks(final TreeMap<BigDecimal, TreeSet<Order>> levels, final JsonGenerator gen) throws IOException {
         for (Map.Entry<BigDecimal, TreeSet<Order>> entry : levels.entrySet()) {
-            if (!entry.getValue().isEmpty()) {
-                String price = entry.getKey().toPlainString();
-                gen.writeStartObject();
-                gen.writeNumberField("count", entry.getValue().size());
-                gen.writeNumberField("amount", entry.getValue().stream().reduce(0, (amount, order) -> amount + order.getQuantity(), Integer::sum));
-                gen.writeStringField("price", price);
-                gen.writeEndObject();
+            TreeSet<Order> orders = entry.getValue();
+            if (!orders.isEmpty()) {
+                writeLevel(entry.getKey(), orders, gen);
             }
         }
+    }
+
+    private void writeBids(final TreeMap<BigDecimal, TreeSet<Order>> levels, final JsonGenerator gen) throws IOException {
+        for (BigDecimal price : levels.descendingKeySet()) {
+            TreeSet<Order> orders = levels.get(price);
+            if (!orders.isEmpty()) {
+                writeLevel(price, orders, gen);
+            }
+        }
+    }
+
+    private void writeLevel(final BigDecimal price, final TreeSet<Order> orders, final JsonGenerator gen) throws IOException {
+        gen.writeStartObject();
+        gen.writeNumberField("count", orders.size());
+        gen.writeNumberField("amount", orders.stream().reduce(0, (amount, order) -> amount + order.getQuantity(), Integer::sum));
+        gen.writeStringField("price", price.toPlainString());
+        gen.writeEndObject();
     }
 }

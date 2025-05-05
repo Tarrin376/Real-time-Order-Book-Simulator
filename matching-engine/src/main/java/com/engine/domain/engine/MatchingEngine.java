@@ -43,7 +43,6 @@ public class MatchingEngine {
     }
 
     private void matchLimitOrMarketOrder(final Order order, final OrderBook orderBook) {
-        OrderSide oppositeSide = order.getSide() == OrderSide.BUY ? OrderSide.SELL : OrderSide.BUY;
         OrderBook.BIterator iterator = orderBook.new BIterator();
 
         while (!order.isFilled()) {
@@ -62,9 +61,11 @@ public class MatchingEngine {
             nextOrder.decreaseQuantity(quantity);
             order.decreaseQuantity(quantity);
             
-            executionHandler.sendExecution(new Execution(
-                nextOrder.getId(), oppositeSide, nextOrder.getSecurity(), 
-                nextOrder.getPrice(), quantity, orderBook.getSeqId()));
+            Execution newOrderExec = new Execution(nextOrder.getOrderId(), nextOrder.getSide(), nextOrder.getSecurity(), nextOrder.getPrice(), quantity);
+            Execution orderExec = new Execution(order.getOrderId(), order.getSide(), order.getSecurity(), nextOrder.getPrice(), quantity);
+
+            executionHandler.sendExecution(newOrderExec);
+            executionHandler.sendExecution(orderExec);
 
             if (nextOrder.isFilled()) {
                 orderBook.removePendingOrder(nextOrder);
@@ -76,10 +77,6 @@ public class MatchingEngine {
         if (!order.isFilled() && order.getType() == OrderType.LIMIT) {
             if (order.getSide() == OrderSide.BUY) orderBook.addBid(order);
             else orderBook.addAsk(order);
-            
-            executionHandler.sendExecution(new Execution(
-                order.getId(), order.getSide(), order.getSecurity(),
-                order.getPrice(), order.getQuantity(), orderBook.getSeqId()));
         }
     }
 }

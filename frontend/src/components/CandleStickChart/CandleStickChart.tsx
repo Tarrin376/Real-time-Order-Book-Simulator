@@ -17,7 +17,7 @@ function CandleStickChart({ socket, security }: CandleStickChartProps) {
     function handleOHLCEvent(ohlcEvent: OHLC) {
         setOhlcEvents((cur) => [...cur, {
             ...ohlcEvent,
-            time: Math.floor(ohlcEvent.startTimestamp) as UTCTimestamp
+            time: Math.floor(ohlcEvent.timestamp) as UTCTimestamp
         }]);
     }
 
@@ -64,10 +64,10 @@ function CandleStickChart({ socket, security }: CandleStickChartProps) {
         const candlestickSeries = chart.addCandlestickSeries({
             priceScaleId: 'right',
             upColor: '#4caf50',
-            downColor: '#e53935',
+            downColor: '#e53552',
             borderVisible: false,
             wickUpColor: '#4caf50',
-            wickDownColor: '#e53935',
+            wickDownColor: '#e53552',
         });
 
         candlestickSeriesRef.current = candlestickSeries;

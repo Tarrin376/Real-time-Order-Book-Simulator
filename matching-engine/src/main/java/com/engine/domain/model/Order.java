@@ -27,7 +27,7 @@ public class Order implements Comparable<Order> {
     private Integer quantity;
 
     @JsonProperty("orderId")
-    private String id;
+    private String orderId;
 
     @JsonProperty("timestamp")
     private double timestamp;
@@ -40,7 +40,7 @@ public class Order implements Comparable<Order> {
     public String getSecurity() { return security; }
     public BigDecimal getPrice() { return price; }
     public Integer getQuantity() { return quantity; }
-    public String getId() { return id; }
+    public String getOrderId() { return orderId; }
     public double getTimestamp() { return timestamp; }
     public boolean isCancelled() { return cancelled; }
 
@@ -59,7 +59,7 @@ public class Order implements Comparable<Order> {
         order.security = this.security;
         order.price = this.price;
         order.quantity = this.quantity;
-        order.id = this.id;
+        order.orderId = this.orderId;
         order.timestamp = this.timestamp;
         order.cancelled = this.cancelled;
 
@@ -82,12 +82,12 @@ public class Order implements Comparable<Order> {
     @Override
     public String toString() {
         if (type == OrderType.CANCEL) {
-            return "[" + id + "] " + type + " " + cancelOrderId + " " + timestampToString();
+            return "[" + orderId + "] " + type + " " + cancelOrderId + " " + timestampToString();
         }
 
         final String priceStr = price != null ? "£" + price + " | " : "";
         final String quantityStr = quantity != null ? "(x" + quantity + ") | " : "";
-        return "[" + id + "] " + type + " " + side + " " + security + " | " + priceStr + quantityStr + timestampToString();
+        return "[" + orderId + "] " + type + " " + side + " " + security + " | " + priceStr + quantityStr + timestampToString();
     }
 
     @Override
@@ -97,6 +97,6 @@ public class Order implements Comparable<Order> {
             return cmp;
         }
     
-        return this.getId().compareTo(other.getId());
+        return this.getOrderId().compareTo(other.getOrderId());
     }
 }

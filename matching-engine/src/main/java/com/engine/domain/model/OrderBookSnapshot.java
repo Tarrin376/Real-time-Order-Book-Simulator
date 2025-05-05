@@ -6,27 +6,21 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 
 public class OrderBookSnapshot {
-    private final int maxPriceLevel = 30;
+    private final int maxPriceLevel = 20;
     private final String security;
-    private final int seqId;
     
     public final TreeMap<BigDecimal, TreeSet<Order>> bids;
     public final TreeMap<BigDecimal, TreeSet<Order>> asks;
     
     public OrderBookSnapshot(final String security, final TreeMap<BigDecimal, TreeSet<Order>> bids, 
-        final TreeMap<BigDecimal, TreeSet<Order>> asks, final int seqId) {
+        final TreeMap<BigDecimal, TreeSet<Order>> asks) {
         this.bids = deepCopySide(bids);
         this.asks = deepCopySide(asks);
         this.security = security;
-        this.seqId = seqId;
     }
 
     public String getSecurity() {
         return security;
-    }
-
-    public int getSeqId() {
-        return seqId;
     }
 
     private TreeMap<BigDecimal, TreeSet<Order>> deepCopySide(final TreeMap<BigDecimal, TreeSet<Order>> side) {
@@ -37,17 +31,19 @@ public class OrderBookSnapshot {
             TreeSet<Order> orders = level.getValue();
             if (priceLevel > maxPriceLevel) {
                 break;
-            } else if (orders.isEmpty()) {
-                continue;
             }
 
             TreeSet<Order> orderCopies = new TreeSet<>();
             for (Order order : orders) {
-                orderCopies.add(order.copy());
+                if (!order.isCancelled()) {
+                    orderCopies.add(order.copy());
+                }
             }
 
-            deepCopy.put(new BigDecimal(level.getKey().toString()), orderCopies);
-            priceLevel++;
+            if (!orderCopies.isEmpty()) {
+                deepCopy.put(new BigDecimal(level.getKey().toString()), orderCopies);
+                priceLevel++;
+            }
         }
 
         return deepCopy;

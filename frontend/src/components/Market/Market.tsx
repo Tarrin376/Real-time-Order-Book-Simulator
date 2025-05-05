@@ -11,10 +11,14 @@ interface MarketProps {
 
 function Market({ socket, security }: MarketProps) {
     const [executions, setExecutions] = useState<Execution[]>([]);
-    const maxSize = 45;
+    const maxSize = 24;
     
     function handleExecution(execution: Execution) {
-        setExecutions((recent) => [execution, ...recent.slice(0, Math.min(recent.length, maxSize - 1))]);
+        if (executions.length > 0 && executions[0].security !== execution.security) {
+            setExecutions([execution]);
+        } else {
+            setExecutions((recent) => [execution, ...recent.slice(0, Math.min(recent.length, maxSize - 1))]);
+        }
     }
 
     useEffect(() => {
@@ -22,9 +26,7 @@ function Market({ socket, security }: MarketProps) {
             return;
         }
 
-        setExecutions([]);
         socket.on(`execution-${security}`, handleExecution);
-        
         return () => {
             socket.off(`execution-${security}`, handleExecution);
         }
@@ -35,7 +37,7 @@ function Market({ socket, security }: MarketProps) {
             <h2>Market</h2>
             <table className="market-table">
                 <thead>
-                    <tr className="market-table-header">
+                    <tr className="table-header">
                         <th>Price (GBP)</th>
                         <th>Amount</th>
                         <th>Time</th>

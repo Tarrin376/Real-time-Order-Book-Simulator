@@ -7,6 +7,5 @@ export type Execution = {
     security: Security,
     price: number,
     delta: number,
-    timestamp: number,
-    seqId: number
+    timestamp: number
 }

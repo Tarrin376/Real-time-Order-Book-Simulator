@@ -7,7 +7,6 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.TreeSet;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Supplier;
 
@@ -17,20 +16,16 @@ import com.engine.domain.model.OrderBookSnapshot;
 public class OrderBook {
     private final TreeMap<BigDecimal, TreeSet<Order>> bids;
     private final TreeMap<BigDecimal, TreeSet<Order>> asks;
-
-    // Thread confinement: only used by the matching engine thread
     private final Map<String, Order> pendingOrders;
 
-    private final String security;
-    private final AtomicInteger seqId;
     private final ReentrantLock lock = new ReentrantLock();
+    private final String security;
 
     public OrderBook(final String security) {
         this.security = security;
         bids = new TreeMap<>(Collections.reverseOrder());
         asks = new TreeMap<>();
         pendingOrders = new HashMap<>();
-        seqId = new AtomicInteger();
     }
 
     public <T> T withLock(Supplier<T> operation) {
@@ -42,17 +37,13 @@ public class OrderBook {
         }
     }
 
-    public int getSeqId() {
-        return seqId.intValue();
-    }
-
     public void addBid(final Order bid) {
         if (!bids.containsKey(bid.getPrice())) {
             bids.put(bid.getPrice(), new TreeSet<>());
         }
 
         TreeSet orders = bids.get(bid.getPrice());
-        pendingOrders.put(bid.getId(), bid);
+        pendingOrders.put(bid.getOrderId(), bid);
         orders.add(bid);
     }
 
@@ -62,29 +53,26 @@ public class OrderBook {
         }
 
         TreeSet orders = asks.get(ask.getPrice());
-        pendingOrders.put(ask.getId(), ask);
+        pendingOrders.put(ask.getOrderId(), ask);
         orders.add(ask);
     }
 
     public void cancelOrder(final Order order) {
-        if (!pendingOrders.containsKey(order.getCancelOrderId())) {
-            return;
+        if (pendingOrders.containsKey(order.getCancelOrderId())) {
+            Order cancelledOrder = pendingOrders.get(order.getCancelOrderId());
+            pendingOrders.remove(order.getCancelOrderId());
+            cancelledOrder.cancelOrder();
         }
-
-        Order cancelledOrder = pendingOrders.get(order.getCancelOrderId());
-        pendingOrders.remove(order.getCancelOrderId());
-        cancelledOrder.cancelOrder();
     }
 
     public void removePendingOrder(final Order order) {
-        if (pendingOrders.containsKey(order.getId())) {
-            pendingOrders.remove(order.getId());
+        if (pendingOrders.containsKey(order.getOrderId())) {
+            pendingOrders.remove(order.getOrderId());
         }
     }
 
     public OrderBookSnapshot getSnapshot() {
-        OrderBookSnapshot orderBookSnapshot = new OrderBookSnapshot(security, bids, asks, seqId.intValue());
-        seqId.addAndGet(1);
+        OrderBookSnapshot orderBookSnapshot = new OrderBookSnapshot(security, bids, asks);
         return orderBookSnapshot;
     }
 

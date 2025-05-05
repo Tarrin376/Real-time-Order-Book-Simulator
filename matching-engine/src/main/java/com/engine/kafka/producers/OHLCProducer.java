@@ -22,7 +22,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 public class OHLCProducer extends KafkaProducerAdapter<OHLC> {
     private final ConcurrentHashMap<String, List<Execution>> securityBuffers;
     private static final Logger LOGGER = LoggerFactory.getLogger(OHLCProducer.class);
-    private final int flushPeriod = 10;
+    private final int flushPeriod = 20;
 
     public OHLCProducer() {
         this.securityBuffers = new ConcurrentHashMap<>();
@@ -40,8 +40,8 @@ public class OHLCProducer extends KafkaProducerAdapter<OHLC> {
     public final void run() {
         Executors.newSingleThreadScheduledExecutor().scheduleAtFixedRate(() -> {
             for (Map.Entry<String, List<Execution>> pair : securityBuffers.entrySet()) {
-                String ticker = pair.getKey();
                 List<Execution> buffer = pair.getValue();
+                String security = pair.getKey();
 
                 synchronized (buffer) {
                     if (buffer.isEmpty()) {
@@ -53,7 +53,7 @@ public class OHLCProducer extends KafkaProducerAdapter<OHLC> {
                     BigDecimal low = getLow(buffer);
                     BigDecimal close = getClose(buffer);
 
-                    OHLC ohlc = new OHLC(open, high, low, close, ticker, getStartTimestamp(buffer), getEndTimestamp(buffer));
+                    OHLC ohlc = new OHLC(open, high, low, close, security, getTimestamp(buffer));
                     LOGGER.info("Sending OHLC: " + ohlc);
 
                     produce(ohlc);
@@ -87,12 +87,8 @@ public class OHLCProducer extends KafkaProducerAdapter<OHLC> {
         return buffer.get(buffer.size() - 1).getPrice();
     }
 
-    private double getStartTimestamp(final List<Execution> buffer) {
+    private double getTimestamp(final List<Execution> buffer) {
         return buffer.get(0).getTimestamp();
-    }
-
-    private double getEndTimestamp(final List<Execution> buffer) {
-        return buffer.get(buffer.size() - 1).getTimestamp();
     }
 
     @Override
