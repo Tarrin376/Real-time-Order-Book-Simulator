@@ -14,6 +14,8 @@ class OrderGenerator:
             self._generated_orders[security] = []
 
     def generate_order(self):
+        self.flush_prev_generated_orders()
+
         security = random.choice(list(self._securities.keys()))
         order_type = random.choice(self._order_types)
         order = {}
@@ -26,6 +28,12 @@ class OrderGenerator:
 
         return order
 
+    def flush_prev_generated_orders(self):
+        flush_threshold = 10000
+        for security in self._securities.keys():
+            if len(self._generated_orders[security]) >= flush_threshold:
+                self._generated_orders[security] = []
+
     def generate_cancel_order(self, order_type, security):
         if len(self._generated_orders[security]) == 0:
             return None
@@ -34,7 +42,6 @@ class OrderGenerator:
 
         return {
             "type": order_type,
-            "side": random.choice(["BUY", "SELL"]),
             "security": security,
             "orderId": str(uuid4()),
             "cancelOrderId": cancel_order_id,

@@ -57,12 +57,15 @@ public class OrderBook {
         orders.add(ask);
     }
 
-    public void cancelOrder(final Order order) {
+    public Order cancelOrder(final Order order) {
         if (pendingOrders.containsKey(order.getCancelOrderId())) {
             Order cancelledOrder = pendingOrders.get(order.getCancelOrderId());
             pendingOrders.remove(order.getCancelOrderId());
             cancelledOrder.cancelOrder();
+            return cancelledOrder;
         }
+
+        return null;
     }
 
     public void removePendingOrder(final Order order) {

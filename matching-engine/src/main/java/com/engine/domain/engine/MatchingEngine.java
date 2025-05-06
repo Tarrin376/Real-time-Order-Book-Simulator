@@ -28,7 +28,7 @@ public class MatchingEngine {
         OrderBook orderBook = orderBookManager.getOrCreateOrderBook(order.getSecurity());
 
         orderBook.withLock(() -> {
-            if (order.getType() == OrderType.CANCEL) orderBook.cancelOrder(order);
+            if (order.getType() == OrderType.CANCEL) cancelOrder(order, orderBook);
             else matchLimitOrMarketOrder(order, orderBook);
             return null;
         });
@@ -61,8 +61,8 @@ public class MatchingEngine {
             nextOrder.decreaseQuantity(quantity);
             order.decreaseQuantity(quantity);
             
-            Execution newOrderExec = new Execution(nextOrder.getOrderId(), nextOrder.getSide(), nextOrder.getSecurity(), nextOrder.getPrice(), quantity);
-            Execution orderExec = new Execution(order.getOrderId(), order.getSide(), order.getSecurity(), nextOrder.getPrice(), quantity);
+            Execution newOrderExec = new Execution(nextOrder.getOrderId(), nextOrder.getSide(), nextOrder.getSecurity(), nextOrder.getPrice(), quantity, null);
+            Execution orderExec = new Execution(order.getOrderId(), order.getSide(), order.getSecurity(), nextOrder.getPrice(), quantity, null);
 
             executionHandler.sendExecution(newOrderExec);
             executionHandler.sendExecution(orderExec);
@@ -77,6 +77,17 @@ public class MatchingEngine {
         if (!order.isFilled() && order.getType() == OrderType.LIMIT) {
             if (order.getSide() == OrderSide.BUY) orderBook.addBid(order);
             else orderBook.addAsk(order);
+        }
+    }
+
+    private void cancelOrder(final Order order, final OrderBook orderBook) {
+        Order cancelledOrder = orderBook.cancelOrder(order);
+        if (cancelledOrder != null) {
+            Execution cancelOrderExec = new Execution(
+                order.getOrderId(), cancelledOrder.getSide(), order.getSecurity(), 
+                cancelledOrder.getPrice(), cancelledOrder.getQuantity(), order.getCancelOrderId());
+
+            executionHandler.sendExecution(cancelOrderExec);
         }
     }
 }

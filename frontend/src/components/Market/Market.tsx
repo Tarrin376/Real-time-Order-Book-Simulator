@@ -6,14 +6,19 @@ import { formatTimestampToTime } from "../../utils/dateFormats";
 
 interface MarketProps {
     socket: Socket | undefined,
-    security: Security
+    security: Security,
+    filterByCancelledOrders?: boolean
 }
 
-function Market({ socket, security }: MarketProps) {
+function Market({ socket, security, filterByCancelledOrders }: MarketProps) {
     const [executions, setExecutions] = useState<Execution[]>([]);
     const maxSize = 24;
     
     function handleExecution(execution: Execution) {
+        if (filterByCancelledOrders && !execution.cancelOrderId) {
+            return;
+        }
+
         if (executions.length > 0 && executions[0].security !== execution.security) {
             setExecutions([execution]);
         } else {
@@ -34,7 +39,7 @@ function Market({ socket, security }: MarketProps) {
     
     return (
         <div className="market component">
-            <h2>Market</h2>
+            <h2>{filterByCancelledOrders ? "Cancelled Orders" : "Market"}</h2>
             <table className="market-table">
                 <thead>
                     <tr className="table-header">

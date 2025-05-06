@@ -6,7 +6,6 @@ import SecurityInfo from './components/SecurityInfo/SecurityInfo';
 import { Security } from './types/Security';
 import Market from './components/Market/Market';
 import OrderBook from './components/OrderBook/OrderBook';
-import CancelledOrders from './components/CancelledOrders/CancelledOrders';
 
 function App() {
     const [socket, setSocket] = useState<Socket>();
@@ -48,9 +47,10 @@ function App() {
                     socket={socket} 
                     security={security} 
                 />
-                <CancelledOrders
-                    socket={socket}
-                    security={security}
+                <Market 
+                    socket={socket} 
+                    security={security} 
+                    filterByCancelledOrders={true}
                 />
             </div>
         </div>

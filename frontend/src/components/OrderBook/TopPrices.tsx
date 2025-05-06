@@ -38,17 +38,17 @@ function TopPrices({ levels, isBidSide }: TopPrices) {
                     <th>Count</th>
                     <th>Amount</th>
                     <th>Total</th>
-                    <th>Price</th>
+                    <th>Price (GBP)</th>
                 </tr>
             </thead>
             <tbody>
                 {sideLevels.map((level: SideLevel) => {
-                    return (
+                    return (   
                         <tr className="side-table-data" key={level.price}>
                             <td>
                                 {level.count}
-                                <span className={`bg-fill ${isBidSide ? "bg-bid" : "bg-sell"}`} style={{ width: `${(level.amount / maxVolume) * 100}%` }}>
-                                </span>
+                                <div className={`bg-fill ${isBidSide ? "bg-bid" : "bg-sell"}`} style={{ width: `${(level.amount / maxVolume) * 100}%` }}>
+                                </div>
                             </td>
                             <td>{level.amount}</td>
                             <td>{level.total}</td>

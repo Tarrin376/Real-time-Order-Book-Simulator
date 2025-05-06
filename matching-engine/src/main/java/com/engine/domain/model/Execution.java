@@ -11,6 +11,9 @@ public class Execution {
     @JsonProperty("orderId")
     private final String orderId;
 
+    @JsonProperty("cancelOrderId")
+    private final String cancelOrderId;
+
     @JsonProperty("id")
     private final String executionId;
     
@@ -29,12 +32,13 @@ public class Execution {
     @JsonProperty("timestamp")
     private final double timestamp;
 
-    public Execution(final String orderId, final OrderSide side, final String security, final BigDecimal price, final int delta) {
+    public Execution(final String orderId, final OrderSide side, final String security, final BigDecimal price, final int delta, final String cancelOrderId) {
         this.orderId = orderId;
         this.side = side;
         this.security = security;
         this.price = price;
         this.delta = delta;
+        this.cancelOrderId = cancelOrderId;
         this.timestamp = (double)System.currentTimeMillis() / 1000;
         this.executionId = UUID.randomUUID().toString();
     }

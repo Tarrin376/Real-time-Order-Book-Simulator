@@ -39,6 +39,7 @@ h2 {
 
 .order-book {
     height: 350px;
+    overflow-y: scroll;
 }
 
 .info-wrapper {
@@ -88,6 +89,7 @@ h2 {
 
 .market-table-data {
     border-bottom: 1px solid rgb(53, 53, 53);
+    animation: flash-bg 0.6s ease;
 }
 
 .market-table-data > td {
@@ -97,6 +99,10 @@ h2 {
 
 .buy-price {
     color: #4caf50 !important;
+}
+
+.bg-fill {
+    transition: width 0.6s ease;
 }
 
 .sell-price {
@@ -150,8 +156,9 @@ h2 {
 }
 
 .market {
-    flex-grow: 1;
-    background-color: red;
+    flex-grow: 1/2;
+    height: 100%;
+    overflow-y: scroll;
 }
 
 .cancelled-orders {
@@ -182,14 +189,40 @@ h2 {
 .bg-fill {
     position: absolute;
     top: 0;
-    left: 0;
     height: 100%;
 }
 
 .bg-bid {
     background-color: #25a52c30;
+    right: 0 !important;
 }
 
 .bg-sell {
     background-color: #bb1e382d;
+    left: 0;
+}
+
+.security-info {
+    display: flex;
+    align-items: center;
+}
+
+.info-section > h4 {
+    margin-bottom: 10px;
+}
+
+.info-section > p {
+    color: rgb(237, 237, 237);
+    font-size: 18px;
+}
+
+.info-section-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 40px;
+}
+
+@keyframes flash-bg {
+    from { background-color: rgba(255, 255, 255, 0.049); }
+    to   { background-color: transparent; }
 }
