@@ -14,7 +14,7 @@ function OrderBook({ socket, security }: OrderBookProps) {
 
     const handleSnapshot = useCallback((snapshot: Snapshot) => {
         setInitialSnapshot(snapshot);
-    }, [security]);
+    }, []);
 
     useEffect(() => {
         if (!socket) {
@@ -25,7 +25,7 @@ function OrderBook({ socket, security }: OrderBookProps) {
         return () => {
             socket.off(`snapshot-${security}`, handleSnapshot);
         }
-    }, [socket, security]);
+    }, [socket, security, handleSnapshot]);
 
     return (
         <div className="component order-book">

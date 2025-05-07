@@ -1,10 +1,10 @@
 import { Socket } from "socket.io-client";
 import { securities, Security } from "../../types/Security";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { OHLC } from "../../types/OHLC";
 import { formatTimestampToTime } from "../../utils/dateFormats";
 import Arrow from "../Icons/CloseArrow";
-import InfoSection from "./InfoSection";
+import Metrics from "./Metrics";
 
 interface SecurityInfoProps {
     socket: Socket | undefined,
@@ -15,9 +15,9 @@ interface SecurityInfoProps {
 function SecurityInfo({ socket, security, changeSecurity }: SecurityInfoProps) {
     const [ohlc, setOHLC] = useState<OHLC>();
 
-    function handleOHLCEvent(ohlc: OHLC) {
+    const handleOHLCEvent = useCallback((ohlc: OHLC) => {
         setOHLC(ohlc);
-    }
+    }, []);
 
     function determineCloseState(): number {
         if (!ohlc?.close) {
@@ -36,7 +36,7 @@ function SecurityInfo({ socket, security, changeSecurity }: SecurityInfoProps) {
         return () => {
             socket.off(`ohlc-${security}`, handleOHLCEvent);
         }
-    }, [socket, security]);
+    }, [socket, security, handleOHLCEvent]);
 
     return (
         <div className="component security-info">
@@ -62,36 +62,10 @@ function SecurityInfo({ socket, security, changeSecurity }: SecurityInfoProps) {
                     {`As of today at ${ohlc?.timestamp ? formatTimestampToTime(ohlc.timestamp) : "00:00"} UTC`}
                 </p>
             </div>
-            <div className="info-section-wrapper">
-                <InfoSection 
-                    title="Spread" 
-                    value={"9.32"} 
-                />
-                <InfoSection 
-                    title="Best Bid" 
-                    value={"246.13"} 
-                />
-                <InfoSection 
-                    title="Best Ask" 
-                    value={"250.13"} 
-                />
-                <InfoSection 
-                    title="Liquidity Ratio" 
-                    value={"1.12"} 
-                />
-                <InfoSection 
-                    title="24H Price Volatility" 
-                    value={"3.56%"} 
-                />
-                <InfoSection 
-                    title="24H High / Low" 
-                    value={"241.77 / 246.13"} 
-                />
-                <InfoSection 
-                    title="24H Volume" 
-                    value={"335K / 804M"} 
-                />
-            </div>
+            <Metrics 
+                socket={socket} 
+                security={security} 
+            />
         </div>
     )
 }

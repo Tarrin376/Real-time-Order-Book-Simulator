@@ -1,6 +1,6 @@
 import { Socket } from "socket.io-client";
 import { Security } from "../../types/Security";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { createChart, ColorType, ISeriesApi, CandlestickData, UTCTimestamp } from "lightweight-charts";
 import { OHLC } from "../../types/OHLC";
 
@@ -14,12 +14,12 @@ function CandleStickChart({ socket, security }: CandleStickChartProps) {
     const candlestickSeriesRef = useRef<ISeriesApi<'Candlestick'> | null>(null);
     const chartRef = useRef<HTMLDivElement>(null);
 
-    function handleOHLCEvent(ohlcEvent: OHLC) {
+    const handleOHLCEvent = useCallback((ohlcEvent: OHLC) => {
         setOhlcEvents((cur) => [...cur, {
             ...ohlcEvent,
             time: Math.floor(ohlcEvent.timestamp) as UTCTimestamp
         }]);
-    }
+    }, [setOhlcEvents]);
 
     useEffect(() => {
         if (!chartRef?.current || !socket) {
@@ -79,7 +79,7 @@ function CandleStickChart({ socket, security }: CandleStickChartProps) {
             socket.off(`ohlc-${security}`, handleOHLCEvent);
             chart.remove();
         };
-    }, [socket, security]);
+    }, [socket, security, handleOHLCEvent]);
 
     useEffect(() => {
         const series = candlestickSeriesRef.current;

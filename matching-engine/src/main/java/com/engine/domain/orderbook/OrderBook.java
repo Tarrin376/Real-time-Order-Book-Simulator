@@ -28,6 +28,10 @@ public class OrderBook {
         pendingOrders = new HashMap<>();
     }
 
+    public String getSecurity() {
+        return security;
+    }
+
     public <T> T withLock(Supplier<T> operation) {
         try {
             lock.lock();

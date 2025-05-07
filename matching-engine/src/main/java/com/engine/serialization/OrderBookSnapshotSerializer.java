@@ -25,6 +25,15 @@ public class OrderBookSnapshotSerializer extends StdSerializer<OrderBookSnapshot
     public void serialize(final OrderBookSnapshot snapshot, final JsonGenerator gen, final SerializerProvider provider) throws IOException {
         gen.writeStartObject();
         gen.writeStringField("security", snapshot.getSecurity());
+
+        gen.writeFieldName("metrics");
+        gen.writeStartObject();
+        gen.writeStringField("spread", snapshot.getSpread() == null ? "-" : snapshot.getSpread().toPlainString());
+        gen.writeStringField("bestBid", snapshot.getBestBid() == null ? "-" : snapshot.getBestBid().toPlainString());
+        gen.writeStringField("bestAsk", snapshot.getBestAsk() == null ? "-" : snapshot.getBestAsk().toPlainString());
+        gen.writeStringField("liquidityRatio", snapshot.getLiquidityRatio() == null ? "-" : snapshot.getLiquidityRatio());
+        gen.writeStringField("totalVolume", "" + snapshot.getTotalVolume() == null ? "-" : "" + snapshot.getTotalVolume());
+        gen.writeEndObject();
         
         gen.writeArrayFieldStart("bids");
         writeBids(snapshot.bids, gen);

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Security } from "../../types/Security";
 import { Socket } from "socket.io-client";
 import { Execution } from "../../types/Execution";
@@ -13,8 +13,8 @@ interface MarketProps {
 function Market({ socket, security, filterByCancelledOrders }: MarketProps) {
     const [executions, setExecutions] = useState<Execution[]>([]);
     const maxSize = 24;
-    
-    function handleExecution(execution: Execution) {
+
+    const handleExecution = useCallback((execution: Execution) => {
         if (filterByCancelledOrders && !execution.cancelOrderId) {
             return;
         }
@@ -24,7 +24,7 @@ function Market({ socket, security, filterByCancelledOrders }: MarketProps) {
         } else {
             setExecutions((recent) => [execution, ...recent.slice(0, Math.min(recent.length, maxSize - 1))]);
         }
-    }
+    }, [setExecutions]);
 
     useEffect(() => {
         if (!socket) {
@@ -35,7 +35,7 @@ function Market({ socket, security, filterByCancelledOrders }: MarketProps) {
         return () => {
             socket.off(`execution-${security}`, handleExecution);
         }
-    }, [socket, security]);
+    }, [socket, security, handleExecution]);
     
     return (
         <div className="market component">
