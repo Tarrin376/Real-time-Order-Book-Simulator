@@ -12,7 +12,7 @@ interface MarketProps {
 
 function Market({ socket, security, filterByCancelledOrders }: MarketProps) {
     const [executions, setExecutions] = useState<Execution[]>([]);
-    const maxSize = 24;
+    const maxSize = 30;
 
     const handleExecution = useCallback((execution: Execution) => {
         if (filterByCancelledOrders && !execution.cancelOrderId) {

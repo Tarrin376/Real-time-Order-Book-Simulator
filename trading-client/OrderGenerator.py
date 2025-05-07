@@ -3,50 +3,58 @@ import time
 from uuid import uuid4
 
 class OrderGenerator:
-    _order_types = ["LIMIT", "MARKET", "CANCEL"]
-    _generated_orders = {}
+    order_types = ["LIMIT", "MARKET", "CANCEL"]
+    generated_orders = {}
 
-    _securities = {"AAPL": 100, "TSLA": 200, "META": 300, "GOOG": 400}
-    _volatility = 150
+    securities = {"AAPL": 100, "TSLA": 200, "META": 300, "GOOG": 400}
+    price_anchor = {security: random.uniform(100, 500) for security in securities}
+
+    volatility = 1.5 
+    trend_drift = 0.05
+    buy_bias = 0.5
 
     def __init__(self):
-        for security in self._securities.keys():
-            self._generated_orders[security] = []
+        for security in self.securities.keys():
+            self.generated_orders[security] = []
 
     def generate_order(self):
         self.flush_prev_generated_orders()
 
-        security = random.choice(list(self._securities.keys()))
-        order_type = random.choice(self._order_types)
+        security = random.choice(list(self.securities.keys()))
+        order_type = random.choice(self.order_types)
         order = {}
 
         if order_type == "LIMIT" or order_type == "MARKET":
             order = self.generate_market_or_limit_order(order_type, security)
-            self._generated_orders[security].append(order.get("orderId"))
+            self.generated_orders[security].append(order.get("orderId"))
         elif order_type == "CANCEL":
             order = self.generate_cancel_order(order_type, security)
 
         return order
 
     def flush_prev_generated_orders(self):
-        flush_threshold = 10000
-        for security in self._securities.keys():
-            if len(self._generated_orders[security]) >= flush_threshold:
-                self._generated_orders[security] = []
+        flush_threshold = 50
+        for security in self.securities.keys():
+            if len(self.generated_orders[security]) >= flush_threshold:
+                self.generated_orders[security] = []
 
     def generate_cancel_order(self, order_type, security):
-        if len(self._generated_orders[security]) == 0:
+        if len(self.generated_orders[security]) == 0:
             return None
         
-        cancel_order_id = random.choice(self._generated_orders[security])
-
         return {
             "type": order_type,
             "security": security,
             "orderId": str(uuid4()),
-            "cancelOrderId": cancel_order_id,
+            "cancelOrderId": random.choice(self.generated_orders[security]),
             "timestamp": time.time()
         }
+    
+    def generate_random_price(self, security):
+        drift = self.trend_drift if random.random() < 0.5 else -self.trend_drift
+        self.price_anchor[security] += drift
+        noise = random.gauss(0, self.volatility)
+        return round(self.price_anchor[security] + noise, 2)
 
     def generate_market_or_limit_order(self, order_type, security):
         order = {
@@ -59,6 +67,6 @@ class OrderGenerator:
         }
 
         if order_type == "LIMIT":
-            order['price'] = "%.2f" % (self._securities[security] + random.randrange(0, self._volatility))
+            order['price'] = "%.2f" % self.generate_random_price(security)
         
         return order

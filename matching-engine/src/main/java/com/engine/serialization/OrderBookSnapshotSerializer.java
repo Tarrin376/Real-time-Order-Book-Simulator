@@ -32,7 +32,7 @@ public class OrderBookSnapshotSerializer extends StdSerializer<OrderBookSnapshot
         gen.writeStringField("bestBid", snapshot.getBestBid() == null ? "-" : snapshot.getBestBid().toPlainString());
         gen.writeStringField("bestAsk", snapshot.getBestAsk() == null ? "-" : snapshot.getBestAsk().toPlainString());
         gen.writeStringField("liquidityRatio", snapshot.getLiquidityRatio() == null ? "-" : snapshot.getLiquidityRatio());
-        gen.writeStringField("totalVolume", "" + snapshot.getTotalVolume() == null ? "-" : "" + snapshot.getTotalVolume());
+        gen.writeStringField("totalVolume", snapshot.getTotalVolume() == null ? "-" : "" + snapshot.getTotalVolume());
         gen.writeEndObject();
         
         gen.writeArrayFieldStart("bids");

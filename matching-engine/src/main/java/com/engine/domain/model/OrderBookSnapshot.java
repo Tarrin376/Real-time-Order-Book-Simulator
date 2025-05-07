@@ -50,7 +50,7 @@ public class OrderBookSnapshot {
         return liquidityRatio;
     }
 
-    public int getTotalVolume() {
+    public Integer getTotalVolume() {
         return totalVolume;
     }
 

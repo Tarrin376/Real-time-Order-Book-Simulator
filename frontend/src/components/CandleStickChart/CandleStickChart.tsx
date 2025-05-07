@@ -29,13 +29,6 @@ function CandleStickChart({ socket, security }: CandleStickChartProps) {
         socket.on(`ohlc-${security}`, handleOHLCEvent);
         setOhlcEvents([]);
 
-        const handleResize = () => {
-            chart.applyOptions({ 
-                width: chartRef.current?.clientWidth,
-                height: chartRef.current?.clientHeight
-            });
-        };
-
         const chart = createChart(chartRef.current, {
             width: chartRef.current.clientWidth,
             height: chartRef.current.clientHeight,
@@ -72,10 +65,8 @@ function CandleStickChart({ socket, security }: CandleStickChartProps) {
 
         candlestickSeriesRef.current = candlestickSeries;
         candlestickSeries.setData([]);
-        window.addEventListener('resize', handleResize);
 
         return () => {
-            window.removeEventListener('resize', handleResize);
             socket.off(`ohlc-${security}`, handleOHLCEvent);
             chart.remove();
         };

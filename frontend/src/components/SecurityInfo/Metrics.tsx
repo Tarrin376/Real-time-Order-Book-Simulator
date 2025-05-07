@@ -48,7 +48,7 @@ function Metrics({ socket, security }: MetricsProps) {
                 styles="sell-price"
             />
             <Metric 
-                title="Liquidity Ratio" 
+                title="Liquidity Ratio (Bid/Ask)" 
                 value={metricData.liquidityRatio} 
             />
             <Metric 
