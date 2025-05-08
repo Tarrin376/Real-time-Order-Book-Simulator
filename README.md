@@ -34,13 +34,13 @@ A real-time order book system simulating matching logic for various order types,
 
 ## 🛠️ Getting Started
 
-1. Clone the Repository
+### 1. Clone the Repository
 ```bash
 > git clone https://github.com/Tarrin376/Real-time-Order-Book-Simulator.git
 > cd Real-time-Order-Book-Simulator
 ```
 
-2. Spin up the Kafka Docker containers
+### 2. Spin up the Kafka Docker containers
 ```bash
 # Builds the images and runs two Kafka containers: One for the broker and the other one for the Control Center for insight into data flow
 > docker-compose -f docker-compose.kafka.yml up -d --build
@@ -48,26 +48,34 @@ A real-time order book system simulating matching logic for various order types,
 > docker ps
 ```
 
-3. Configure the Kafka topics through Confluent Control Center
-- Open Confluent Control Center which is located on http://localhost:9021
-- Click on the single cluster running and go to "topics"
-- Click "new topic" and you should see something similar to the following:
-- ![image](https://github.com/user-attachments/assets/306b45ce-881e-4245-bf30-111013421ec5)
-- You need to create four topics:
-  * orders
-  * order-book-snapshots
-  * executions
-  * ohlc-events
-- For each of these topics, follow the below steps:
-  * Enter the topic name (use topic names above)
-  * Enter the number of partitions which will be 4 for all topics (each partition represents a security e.g. TSLA, META, AAPL, and GOOG)
-  * Click on "customize settings"
-  * Set availability to "low availability" (recommended for local development)
-  * Change the Storage Retention time to 1 hour (this means that any events that remain in the kafka topic for over an hour will be deleted)
-- Wait until you see all topics running in an healthy state (see below):
-- ![image](https://github.com/user-attachments/assets/ba277a59-6a09-42c3-9187-c9d0616bb843)
+### 3. Configure the Kafka Topics Through Confluent Control Center
 
-4a. Running the application (using Docker)
+1. Open [Confluent Control Center](http://localhost:9021).
+2. Click on the single running cluster and navigate to **Topics**.
+3. Click **"New Topic"** — you should see a screen similar to the one below:
+
+   ![image](https://github.com/user-attachments/assets/306b45ce-881e-4245-bf30-111013421ec5)
+
+4. Create the following four topics:
+   - `orders`
+   - `order-book-snapshots`
+   - `executions`
+   - `ohlc-events`
+
+5. For each topic, follow these steps:
+   - Enter the topic name (use one of the names listed above).
+   - Set **Number of partitions** to `4`  
+     *(Each partition corresponds to a security, e.g., TSLA, META, AAPL, GOOG).*
+   - Click **"Customize settings"**.
+   - Set **Availability** to `Low availability` *(recommended for local development)*.
+   - Set **Storage retention time** to `1 hour`  
+     *(Events older than this will be automatically deleted).*
+
+6. Wait until all topics are in a healthy state. You should see something like this:
+
+   ![image](https://github.com/user-attachments/assets/ba277a59-6a09-42c3-9187-c9d0616bb843)
+
+### 4a. Running the application (using Docker)
 ```bash
 # Builds the images and runs four containers: Matching Engine, Event Gateway, Trading Client, and Frontend
 > docker-compose -f docker-compose.yml -d --build
@@ -75,7 +83,7 @@ A real-time order book system simulating matching logic for various order types,
 > docker ps
 ```
 
-4b. Running the application (without Docker)
+### 4b. Running the application (without Docker)
 ```bash
 # Move to the Frontend directory
 > cd frontend
@@ -109,4 +117,4 @@ A real-time order book system simulating matching logic for various order types,
 > npm run dev
 ```
 
-5. Go to http://localhost:9000 and you should see the application running live!
+### 5. Go to http://localhost:9000 and you should see the application running live!
