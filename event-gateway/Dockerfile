@@ -12,5 +12,8 @@ COPY ./src ./src
 # Install all dependencies
 RUN npm install
 
+# Expose port 3000
+EXPOSE 3000
+
 # Command to run the event gateway
 CMD ["npm", "start"]

@@ -18,6 +18,7 @@ function App() {
     useEffect(() => {
         const ws = io('http://localhost:3000');
         setSocket(ws);
+        
         return () => {
             ws?.disconnect();
         }

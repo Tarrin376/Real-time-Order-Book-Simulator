@@ -1,4 +1,9 @@
 ---
+networks:
+  shared:
+    external: true
+    name: order_book_network
+
 services:
   trading-client:
     container_name: trading-client
@@ -7,6 +12,8 @@ services:
       dockerfile: Dockerfile
     environment:
       - KAFKA_BOOTSTRAP_SERVERS=broker:29092
+    networks:
+      - shared
       
   matching-engine:
     container_name: matching-engine
@@ -15,6 +22,8 @@ services:
       dockerfile: Dockerfile
     environment:
       - KAFKA_BOOTSTRAP_SERVERS=broker:29092
+    networks:
+      - shared
   
   event-gateway:
     container_name: event-gateway
@@ -23,6 +32,10 @@ services:
       dockerfile: Dockerfile
     environment:
       - KAFKA_BOOTSTRAP_SERVERS=broker:29092
+    ports:
+      - "3000:3000"
+    networks:
+      - shared
   
   frontend:
     container_name: frontend
@@ -31,3 +44,5 @@ services:
       dockerfile: Dockerfile
     ports:
       - "9000:80"
+    networks:
+      - shared

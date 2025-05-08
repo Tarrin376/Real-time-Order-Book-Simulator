@@ -10,7 +10,7 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy the source code
-COPY main.py .
+COPY . .
 
 # Command to run the trading client
 CMD ["python", "main.py"]
