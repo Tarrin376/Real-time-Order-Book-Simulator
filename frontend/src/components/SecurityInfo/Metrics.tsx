@@ -21,39 +21,37 @@ function Metrics({ socket, security }: MetricsProps) {
             return;
         }
         
+        setMetricData(undefined);
         socket.on(`snapshot-${security}`, handleSnapshot);
+        
         return () => {
             socket.off(`snapshot-${security}`, handleSnapshot);
         }
     }, [socket, security, handleSnapshot]);
-
-    if (!metricData) {
-        return <></>
-    }
     
     return (
         <div className="info-section-wrapper">
             <Metric 
                 title="Spread" 
-                value={metricData.spread} 
+                value={metricData?.spread ?? "-"} 
             />
             <Metric 
                 title="Best Bid" 
-                value={metricData.bestBid} 
+                value={metricData?.bestBid ?? "-"} 
                 styles="buy-price"
             />
             <Metric 
                 title="Best Ask" 
-                value={metricData.bestAsk} 
+                value={metricData?.bestAsk ?? "-"} 
                 styles="sell-price"
             />
             <Metric 
                 title="Liquidity Ratio (Bid/Ask)" 
-                value={metricData.liquidityRatio} 
+                value={metricData?.liquidityRatio ?? "-"} 
             />
             <Metric 
                 title="Total Volume" 
-                value={metricData.totalVolume} 
+                value={metricData?.totalVolume ?? "-"} 
             />
         </div>
     )

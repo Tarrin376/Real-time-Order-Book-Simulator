@@ -21,7 +21,9 @@ function OrderBook({ socket, security }: OrderBookProps) {
             return;
         }
 
+        setInitialSnapshot(undefined);
         socket.on(`snapshot-${security}`, handleSnapshot);
+
         return () => {
             socket.off(`snapshot-${security}`, handleSnapshot);
         }

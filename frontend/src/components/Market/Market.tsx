@@ -15,10 +15,10 @@ function Market({ socket, security, filterByCancelledOrders }: MarketProps) {
     const maxSize = 30;
 
     const handleExecution = useCallback((execution: Execution) => {
-        if (filterByCancelledOrders && !execution.cancelOrderId) {
+        if (filterByCancelledOrders && !execution?.cancelOrderId) {
             return;
         }
-
+        
         if (executions.length > 0 && executions[0].security !== execution.security) {
             setExecutions([execution]);
         } else {
@@ -31,11 +31,13 @@ function Market({ socket, security, filterByCancelledOrders }: MarketProps) {
             return;
         }
 
+        setExecutions([]);
         socket.on(`execution-${security}`, handleExecution);
+
         return () => {
             socket.off(`execution-${security}`, handleExecution);
         }
-    }, [socket, security, handleExecution]);
+    }, [socket, security, handleExecution, setExecutions]);
     
     return (
         <div className="market component">
