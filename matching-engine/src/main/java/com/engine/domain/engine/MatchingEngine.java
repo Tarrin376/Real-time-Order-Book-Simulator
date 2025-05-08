@@ -5,8 +5,9 @@ import java.math.BigDecimal;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.engine.domain.model.Execution;
+import com.engine.domain.model.CancelOrderExecution;
 import com.engine.domain.model.Order;
+import com.engine.domain.model.OrderExecution;
 import com.engine.domain.orderbook.OrderBook;
 import com.engine.domain.orderbook.OrderBookManager;
 import com.engine.enums.OrderSide;
@@ -43,7 +44,7 @@ public class MatchingEngine {
     }
 
     private void matchLimitOrMarketOrder(final Order order, final OrderBook orderBook) {
-        OrderBook.BIterator iterator = orderBook.new BIterator();
+        OrderBook.OrderIterator iterator = orderBook.new OrderIterator();
 
         while (!order.isFilled()) {
             Order nextOrder = order.getSide() == OrderSide.BUY ? iterator.nextAsk() : iterator.nextBid();
@@ -61,8 +62,13 @@ public class MatchingEngine {
             nextOrder.decreaseQuantity(quantity);
             order.decreaseQuantity(quantity);
             
-            Execution newOrderExec = new Execution(nextOrder.getOrderId(), nextOrder.getSide(), nextOrder.getSecurity(), nextOrder.getPrice(), quantity, null);
-            Execution orderExec = new Execution(order.getOrderId(), order.getSide(), order.getSecurity(), nextOrder.getPrice(), quantity, null);
+            OrderExecution newOrderExec = new OrderExecution(
+                nextOrder.getOrderId(), nextOrder.getSide(), 
+                nextOrder.getSecurity(), nextOrder.getPrice(), quantity);
+
+            OrderExecution orderExec = new OrderExecution(
+                order.getOrderId(), order.getSide(), 
+                order.getSecurity(), nextOrder.getPrice(), quantity);
 
             executionHandler.sendExecution(newOrderExec);
             executionHandler.sendExecution(orderExec);
@@ -83,7 +89,7 @@ public class MatchingEngine {
     private void cancelOrder(final Order order, final OrderBook orderBook) {
         Order cancelledOrder = orderBook.cancelOrder(order);
         if (cancelledOrder != null) {
-            Execution cancelOrderExec = new Execution(
+            CancelOrderExecution cancelOrderExec = new CancelOrderExecution(
                 order.getOrderId(), cancelledOrder.getSide(), order.getSecurity(), 
                 cancelledOrder.getPrice(), cancelledOrder.getQuantity(), order.getCancelOrderId());
 

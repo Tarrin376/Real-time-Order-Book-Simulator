@@ -5,7 +5,7 @@ import java.util.Date;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class OHLC {
+public class OpenHighLowClose {
     @JsonProperty("open")
     private final BigDecimal open;
 
@@ -24,7 +24,7 @@ public class OHLC {
     @JsonProperty("timestamp")
     private final double timestamp;
 
-    public OHLC(final BigDecimal open, final BigDecimal high, final BigDecimal low, final BigDecimal close, 
+    public OpenHighLowClose(final BigDecimal open, final BigDecimal high, final BigDecimal low, final BigDecimal close, 
         final String security, final double timestamp) {
         this.open = open;
         this.high = high;

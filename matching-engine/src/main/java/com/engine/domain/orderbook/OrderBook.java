@@ -21,7 +21,7 @@ public class OrderBook {
     private final ReentrantLock lock = new ReentrantLock();
     private final String security;
 
-    public OrderBook(final String security) {
+    protected OrderBook(final String security) {
         this.security = security;
         bids = new TreeMap<>(Collections.reverseOrder());
         asks = new TreeMap<>();
@@ -83,14 +83,14 @@ public class OrderBook {
         return orderBookSnapshot;
     }
 
-    public class BIterator {
+    public class OrderIterator {
         private BigDecimal bidLevel;
         private BigDecimal askLevel;
 
         private Iterator<Order> curBids;
         private Iterator<Order> curAsks;
 
-        public BIterator() {
+        public OrderIterator() {
             bidLevel = bids.isEmpty() ? null : bids.firstKey();
             askLevel = asks.isEmpty() ? null : asks.firstKey();
 

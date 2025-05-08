@@ -13,22 +13,22 @@ import org.apache.kafka.clients.producer.ProducerRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.engine.domain.model.Execution;
-import com.engine.domain.model.OHLC;
+import com.engine.domain.model.OrderExecution;
+import com.engine.domain.model.OpenHighLowClose;
 import com.engine.kafka.adapters.KafkaProducerAdapter;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-public class OHLCProducer extends KafkaProducerAdapter<OHLC> {
-    private final ConcurrentHashMap<String, List<Execution>> securityBuffers;
-    private static final Logger LOGGER = LoggerFactory.getLogger(OHLCProducer.class);
+public class OpenHighLowCloseProducer extends KafkaProducerAdapter<OpenHighLowClose> {
+    private final ConcurrentHashMap<String, List<OrderExecution>> securityBuffers;
+    private static final Logger LOGGER = LoggerFactory.getLogger(OpenHighLowCloseProducer.class);
     private final int flushPeriod = 20;
 
-    public OHLCProducer() {
+    public OpenHighLowCloseProducer() {
         this.securityBuffers = new ConcurrentHashMap<>();
     }
 
-    public void addToBuffer(final Execution exec) {
+    public void addToBuffer(final OrderExecution exec) {
         String security = exec.getSecurity();
         if (!securityBuffers.containsKey(security)) {
             securityBuffers.put(security, Collections.synchronizedList(new ArrayList<>()));
@@ -39,8 +39,8 @@ public class OHLCProducer extends KafkaProducerAdapter<OHLC> {
 
     public final void run() {
         Executors.newSingleThreadScheduledExecutor().scheduleAtFixedRate(() -> {
-            for (Map.Entry<String, List<Execution>> pair : securityBuffers.entrySet()) {
-                List<Execution> buffer = pair.getValue();
+            for (Map.Entry<String, List<OrderExecution>> pair : securityBuffers.entrySet()) {
+                List<OrderExecution> buffer = pair.getValue();
                 String security = pair.getKey();
 
                 synchronized (buffer) {
@@ -53,7 +53,7 @@ public class OHLCProducer extends KafkaProducerAdapter<OHLC> {
                     BigDecimal low = getLow(buffer);
                     BigDecimal close = getClose(buffer);
 
-                    OHLC ohlc = new OHLC(open, high, low, close, security, getTimestamp(buffer));
+                    OpenHighLowClose ohlc = new OpenHighLowClose(open, high, low, close, security, getTimestamp(buffer));
                     LOGGER.info("Sending OHLC: " + ohlc);
 
                     produce(ohlc);
@@ -63,11 +63,11 @@ public class OHLCProducer extends KafkaProducerAdapter<OHLC> {
         }, flushPeriod, flushPeriod, TimeUnit.SECONDS);
     }
 
-    private BigDecimal getOpen(final List<Execution> buffer) {
+    private BigDecimal getOpen(final List<OrderExecution> buffer) {
         return buffer.get(0).getPrice();
     }
 
-    private BigDecimal getHigh(final List<Execution> buffer) {
+    private BigDecimal getHigh(final List<OrderExecution> buffer) {
         return buffer
             .stream()
             .max((a, b) -> a.getPrice().compareTo(b.getPrice()))
@@ -75,7 +75,7 @@ public class OHLCProducer extends KafkaProducerAdapter<OHLC> {
             .getPrice();
     }
 
-    private BigDecimal getLow(final List<Execution> buffer) {
+    private BigDecimal getLow(final List<OrderExecution> buffer) {
         return buffer
             .stream()
             .min((a, b) -> a.getPrice().compareTo(b.getPrice()))
@@ -83,16 +83,16 @@ public class OHLCProducer extends KafkaProducerAdapter<OHLC> {
             .getPrice();
     }
 
-    private BigDecimal getClose(final List<Execution> buffer) {
+    private BigDecimal getClose(final List<OrderExecution> buffer) {
         return buffer.get(buffer.size() - 1).getPrice();
     }
 
-    private double getTimestamp(final List<Execution> buffer) {
+    private double getTimestamp(final List<OrderExecution> buffer) {
         return buffer.get(0).getTimestamp();
     }
 
     @Override
-    public ProducerRecord<String, String> serialize(final OHLC ohlc) {
+    public ProducerRecord<String, String> serialize(final OpenHighLowClose ohlc) {
         try {
             ObjectMapper objectMapper = new ObjectMapper();
             String json = objectMapper.writeValueAsString(ohlc);

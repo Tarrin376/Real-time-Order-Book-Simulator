@@ -4,27 +4,27 @@ import org.apache.kafka.clients.producer.ProducerRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.engine.domain.model.Execution;
+import com.engine.domain.model.OrderExecution;
 import com.engine.kafka.adapters.KafkaProducerAdapter;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-public class ExecutionProducer extends KafkaProducerAdapter<Execution> {
+public class ExecutionProducer extends KafkaProducerAdapter<OrderExecution> {
     private static final Logger LOGGER = LoggerFactory.getLogger(ExecutionProducer.class);
-    private final OHLCProducer ohlcDataAggregator;
+    private final OpenHighLowCloseProducer ohlcDataAggregator;
 
-    public ExecutionProducer(final OHLCProducer ohlcDataAggregator) {
+    public ExecutionProducer(final OpenHighLowCloseProducer ohlcDataAggregator) {
         this.ohlcDataAggregator = ohlcDataAggregator;
         ohlcDataAggregator.run();
     }
 
-    public void sendExecution(final Execution exec) {
+    public void sendExecution(final OrderExecution exec) {
         ohlcDataAggregator.addToBuffer(exec);
         produce(exec);
     }
 
     @Override
-    public ProducerRecord<String, String> serialize(final Execution exec) {
+    public ProducerRecord<String, String> serialize(final OrderExecution exec) {
         try {
             ObjectMapper objectMapper = new ObjectMapper();
             String json = objectMapper.writeValueAsString(exec);

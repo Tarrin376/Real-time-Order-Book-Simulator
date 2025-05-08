@@ -4,11 +4,11 @@ import java.time.Duration;
 import java.util.List;
 import java.util.Properties;
 
-import org.apache.kafka.common.serialization.StringDeserializer;
 import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
+import org.apache.kafka.common.serialization.StringDeserializer;
 
 public abstract class KafkaConsumerAdapter<T> {
     private final Properties properties = new Properties() {{
@@ -20,7 +20,7 @@ public abstract class KafkaConsumerAdapter<T> {
 
     private final List<String> topics;
 
-    public KafkaConsumerAdapter(final String consumerGroup, final String clientId, final List<String> topics) {
+    protected KafkaConsumerAdapter(final String consumerGroup, final String clientId, final List<String> topics) {
         properties.put("group.id", consumerGroup);
         properties.put("client.id", clientId);
         this.topics = topics;
