@@ -120,4 +120,4 @@ A real-time order book system simulating matching logic for various order types,
 ```
 
 ### 5. Open [Frontend](http://localhost:9000) and you should see the application running live! 
-- *Give it a few seconds to establish WebSocket connections, Kafka broker connections, etc.
+- Give it a few seconds to establish WebSocket connections, Kafka broker connections, etc.
