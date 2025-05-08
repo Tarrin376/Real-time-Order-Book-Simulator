@@ -78,7 +78,7 @@ A real-time order book system simulating matching logic for various order types,
 ### 4a. Running the application (using Docker)
 ```bash
 # Builds the images and runs four containers: Matching Engine, Event Gateway, Trading Client, and Frontend
-> docker-compose -f docker-compose.yml -d --build
+> docker-compose -f docker-compose.yml up -d --build
 # Run again to check that you see four more containers running
 > docker ps
 ```
