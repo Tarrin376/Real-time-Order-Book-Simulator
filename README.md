@@ -17,12 +17,12 @@ A real-time order book system simulating matching logic for various order types,
 
 ## 🚀 Features
 
-- ⚡ Real-Time Order Processing: Efficient handling of Market, Limit, and Cancel orders using Apache Kafka for distributed, load-balanced communication.
-- 📈 Live Candlestick Charts: Dynamic OHLC visualization driven by real-time data streamed from the matching engine.
-- 📊 Order Book Snapshots with Key Metrics: Includes spread, best bid/ask, liquidity ratio, and total volume for enhanced market insight.
-- 🧵 Thread-Safe Engine: Robust multi-threading ensures order book snapshots remain consistent during active order processing.
-- 🐳 Dockerized Deployment: Fully containerized with Docker Compose for consistent setup across any operating system.
-- 🤖 Smart Trade Simulation: The trading client generates realistic market activity using Gaussian distributions, volatility modeling, and directional drift.
+- Real-Time Order Processing: Efficient handling of Market, Limit, and Cancel orders using Apache Kafka for distributed, load-balanced communication.
+- Live Candlestick Charts: Dynamic OHLC visualization driven by real-time data streamed from the matching engine.
+- Order Book Snapshots with Key Metrics: Includes spread, best bid/ask, liquidity ratio, and total volume for enhanced market insight.
+- Thread-Safe Engine: Robust multi-threading ensures order book snapshots remain consistent during active order processing.
+- Dockerized Deployment: Fully containerized with Docker Compose for consistent setup across any operating system.
+- Smart Trade Simulation: The trading client generates realistic market activity using Gaussian distributions, volatility modeling, and directional drift.
 
 ---
 
