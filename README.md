@@ -1,8 +1,8 @@
-﻿# 📊 Real-time Order Book Simulator
+﻿# Real-time Order Book Simulator
 
 A real-time order book system simulating matching logic for various order types, such as limit, market, and cancel orders.
 
-## 🛠 Tech Stack
+## Tech Stack
 
 - **Frontend:** React, TypeScript
 - **Backend Services:** Java (Matching Engine), Python (Trading Client), Node.js (Event Gateway)
@@ -15,7 +15,7 @@ A real-time order book system simulating matching logic for various order types,
 
 ---
 
-## 🚀 Features
+## Features
 
 - Real-Time Order Processing: Efficient handling of Market, Limit, and Cancel orders using Apache Kafka for distributed, load-balanced communication.
 - Live Candlestick Charts: Dynamic OHLC visualization driven by real-time data streamed from the matching engine.
@@ -26,13 +26,13 @@ A real-time order book system simulating matching logic for various order types,
 
 ---
 
-## ⚙️ Architecture Diagram
+## Architecture Diagram
 
 ![alt text](architecture-diagram.png)
 
 ---
 
-## 🛠️ Getting Started
+## Getting Started
 
 ### 1. Clone the Repository
 ```bash
@@ -121,3 +121,4 @@ A real-time order book system simulating matching logic for various order types,
 
 ### 5. Open [Frontend](http://localhost:9000) and you should see the application running live! 
 - Give it a few seconds to establish WebSocket connections, Kafka broker connections, etc.
+
